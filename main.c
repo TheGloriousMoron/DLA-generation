@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include <winsock2.h>
+#include <png.h>  // Include the libpng header
 
 // Particle structure representing each particle
 typedef struct {
@@ -17,33 +18,9 @@ typedef struct {
     particle_t particle_null;
 } grid_t;
 
-// CRC32 lookup table
-uint32_t crc32_table[256];
-
 // Function to generate the CRC32 lookup table
 void generate_crc32_table() {
-    printf("[DEBUG] Generating CRC32 table...\n");
-    uint32_t crc;
-    for (uint32_t i = 0; i < 256; i++) {
-        crc = i;
-        for (uint32_t j = 0; j < 8; j++) {
-            if (crc & 1)
-                crc = (crc >> 1) ^ 0xEDB88320;
-            else
-                crc >>= 1;
-        }
-        crc32_table[i] = crc;
-    }
-    printf("[DEBUG] CRC32 table generated successfully.\n");
-}
-
-// Manually implemented CRC32 function
-uint32_t crc32(uint32_t crc, const unsigned char *buf, size_t len) {
-    crc ^= ~0U;
-    while (len--) {
-        crc = crc32_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
-    }
-    return crc ^ ~0U;
+    // Not needed when using libpng
 }
 
 // Function to initialize the grid with empty particles
@@ -142,6 +119,103 @@ void particle_move(grid_t *grid, particle_t *particle, bool *particle_done) {
     }
 }
 
+// Function to generate the image data based on particle positions
+void generate_image_data(grid_t *grid, uint8_t **image_data) {
+    // Allocate image data (RGBA format)
+    *image_data = malloc(grid->resolution * grid->resolution * 4);
+    if (!*image_data) {
+        perror("Failed to allocate memory for image data");
+        exit(EXIT_FAILURE);
+    }
+
+    for (uint32_t i = 0; i < grid->resolution; i++) {
+        for (uint32_t j = 0; j < grid->resolution; j++) {
+            uint8_t *pixel = &(*image_data)[(i * grid->resolution + j) * 4];
+
+            // Check if there is a particle at this position
+            if (grid->particles[i][j].posx != grid->particle_null.posx || grid->particles[i][j].posy != grid->particle_null.posy) {
+                // Particle is present, set pixel to black (RGBA)
+                pixel[0] = 0;   // R
+                pixel[1] = 0;   // G
+                pixel[2] = 0;   // B
+                pixel[3] = 255; // A (fully opaque)
+            } else {
+                // No particle, set pixel to white (RGBA)
+                pixel[0] = 255; // R
+                pixel[1] = 255; // G
+                pixel[2] = 255; // B
+                pixel[3] = 255; // A (fully opaque)
+            }
+        }
+    }
+}
+
+// Generate a PNG file using libpng
+void make_png(const char *filename, uint8_t *image_data, uint32_t width, uint32_t height) {
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) {
+        perror("Failed to open file for writing PNG");
+        return;
+    }
+
+    // Create the PNG write struct
+    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fclose(fp);
+        perror("Failed to create PNG write struct");
+        return;
+    }
+
+    // Create the PNG info struct
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        png_destroy_write_struct(&png_ptr, NULL);
+        fclose(fp);
+        perror("Failed to create PNG info struct");
+        return;
+    }
+
+    // Set error handling
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        fclose(fp);
+        perror("Failed to set PNG error handling");
+        return;
+    }
+
+    // Initialize the PNG writing
+    png_init_io(png_ptr, fp);
+
+    // Set the PNG header information (correct usage)
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA,
+                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+                 PNG_FILTER_TYPE_DEFAULT);
+    
+    // Write the info to the PNG file
+    png_write_info(png_ptr, info_ptr);
+
+    // Write image data row by row
+    png_bytep row = malloc(4 * width * sizeof(png_byte)); // Allocate a row buffer
+    if (!row) {
+        perror("Failed to allocate memory for PNG row");
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        fclose(fp);
+        return;
+    }
+
+    for (uint32_t y = 0; y < height; y++) {
+        memcpy(row, &image_data[y * width * 4], width * 4); // Copy one row at a time
+        png_write_row(png_ptr, row);
+    }
+
+    // Finish writing the PNG
+    png_write_end(png_ptr, NULL);
+    free(row);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    fclose(fp);
+}
+
+
 // Generate particles and simulate movement
 void generation_loop(grid_t *grid, uint8_t number_of_particles, uint32_t resolution) {
     printf("[DEBUG] Starting generation loop with %u particles...\n", number_of_particles);
@@ -166,7 +240,7 @@ void generation_loop(grid_t *grid, uint8_t number_of_particles, uint32_t resolut
             particle_move(grid, particle, &particle_done);
         }
 
-        printf("[DEBUG] Paricle %d set", i);
+        printf("[DEBUG] Particle %d set\n", i);
 
         free(particle);
     }
@@ -175,243 +249,29 @@ void generation_loop(grid_t *grid, uint8_t number_of_particles, uint32_t resolut
     printf("[DEBUG] Generation loop completed.\n");
 }
 
-// Function to write a PNG image filled entirely with white pixels
-void write_png_white_image(const char *filename, uint32_t resolution) {
-    FILE *fptr = fopen(filename, "wb");
-    if (!fptr) {
-        perror("Failed to open file for writing");
-        return;
-    }
-
-    // PNG signature
-    unsigned char png_signature[8] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
-    fwrite(png_signature, 1, 8, fptr);
-
-    // IHDR Chunk (Image Header)
-    uint8_t ihdr[13];
-    ihdr[0] = (resolution >> 24) & 0xff;
-    ihdr[1] = (resolution >> 16) & 0xff;
-    ihdr[2] = (resolution >> 8) & 0xff;
-    ihdr[3] = resolution & 0xff;
-    ihdr[4] = (resolution >> 24) & 0xff;
-    ihdr[5] = (resolution >> 16) & 0xff;
-    ihdr[6] = (resolution >> 8) & 0xff;
-    ihdr[7] = resolution & 0xff;
-    ihdr[8] = 1;  // Bit depth (1 for black/white)
-    ihdr[9] = 3;  // Color type (3: indexed color)
-    ihdr[10] = 0; // Compression method
-    ihdr[11] = 0; // Filter method
-    ihdr[12] = 0; // Interlace method (none)
-
-    uint32_t ihdr_len = htonl(13);  // IHDR data length (13 bytes)
-    fwrite(&ihdr_len, 4, 1, fptr);  // Write length
-    fwrite("IHDR", 1, 4, fptr);     // Write chunk type
-    fwrite(ihdr, 1, 13, fptr);      // Write IHDR data
-    uint32_t crc_ihdr = crc32(0L, Z_NULL, 0);  // Initialize CRC
-    crc_ihdr = crc32(crc_ihdr, (const unsigned char *)"IHDR", 4);  // Update CRC with chunk type
-    crc_ihdr = crc32(crc_ihdr, ihdr, 13);  // Update CRC with IHDR data
-    uint32_t crc_ihdr_final = htonl(crc_ihdr);
-    fwrite(&crc_ihdr_final, 4, 1, fptr);
-
-    // PLTE Chunk (Palette: black and white colors)
-    unsigned char plte[6] = {
-        0x00, 0x00, 0x00,  // Black
-        0xFF, 0xFF, 0xFF   // White
-    };
-    uint32_t plte_len = htonl(6);   // Length of PLTE data (6 bytes)
-    fwrite(&plte_len, 4, 1, fptr);  // Write length
-    fwrite("PLTE", 1, 4, fptr);     // Write chunk type
-    fwrite(plte, 1, 6, fptr);       // Write PLTE data
-    uint32_t crc_plte = crc32(0L, Z_NULL, 0);  // Initialize CRC
-    crc_plte = crc32(crc_plte, (const unsigned char *)"PLTE", 4);  // Update CRC with chunk type
-    crc_plte = crc32(crc_plte, plte, 6);  // Update CRC with PLTE data
-    uint32_t crc_plte_final = htonl(crc_plte);
-    fwrite(&crc_plte_final, 4, 1, fptr);
-
-    // IDAT Chunk (Image Data - filled with white pixels)
-    uint32_t image_data_size = (resolution / 8 + 1) * resolution;  // Include filter bytes
-    uint32_t idat_len = htonl(image_data_size);
-    fwrite(&idat_len, 4, 1, fptr);  // Write length
-    fwrite("IDAT", 1, 4, fptr);     // Write chunk type
-
-    // Compress the image data using zlib
-    unsigned char *image_data = (unsigned char *)malloc(image_data_size);
-    if (!image_data) {
-        perror("Failed to allocate memory for image data");
-        fclose(fptr);
-        return;
-    }
-
-    for (uint32_t i = 0; i < resolution; i++) {
-        image_data[i * (resolution / 8 + 1)] = 0;  // Filter byte for each scanline
-        for (uint32_t j = 0; j < resolution / 8; j++) {
-            image_data[i * (resolution / 8 + 1) + j + 1] = 0xFF;  // All white pixels
-        }
-    }
-
-    uLongf compressed_size = compressBound(image_data_size);
-    unsigned char *compressed_data = (unsigned char *)malloc(compressed_size);
-    if (compress(compressed_data, &compressed_size, image_data, image_data_size) != Z_OK) {
-        perror("Failed to compress image data");
-        free(image_data);
-        fclose(fptr);
-        return;
-    }
-
-    fwrite(compressed_data, 1, compressed_size, fptr);  // Write compressed IDAT data
-    free(image_data);
-    free(compressed_data);
-
-    uint32_t crc_idat = crc32(0L, Z_NULL, 0);  // Initialize CRC
-    crc_idat = crc32(crc_idat, (const unsigned char *)"IDAT", 4);  // Update CRC with chunk type
-    crc_idat = crc32(crc_idat, compressed_data, compressed_size);  // Update CRC with compressed data
-    uint32_t crc_idat_final = htonl(crc_idat);
-    fwrite(&crc_idat_final, 4, 1, fptr);
-
-    // IEND Chunk (End of the image)
-    uint32_t iend_len = 0;
-    fwrite(&iend_len, 4, 1, fptr);  // Write length (0)
-    fwrite("IEND", 1, 4, fptr);     // Write chunk type
-    uint32_t crc_iend = crc32(0L, Z_NULL, 0);  // Initialize CRC
-    crc_iend = crc32(crc_iend, (const unsigned char *)"IEND", 4);  // Update CRC with chunk type
-    uint32_t crc_iend_final = htonl(crc_iend);
-    fwrite(&crc_iend_final, 4, 1, fptr);
-
-    fclose(fptr);
-    printf("PNG file '%s' written successfully.\n", filename);
-}
-
-// Function to write the grid to a PNG file (mockup)
-void download_grid(const char* filename, grid_t *grid) {
-    printf("[DEBUG] Writing grid to file: %s\n", filename);
-    FILE *fptr = fopen(filename, "wb");
-    if (!fptr) {
-        perror("Failed to open file for writing");
-        return;
-    }
-
-    // PNG signature
-    unsigned char png_signature[8] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
-    fwrite(png_signature, 1, 8, fptr);
-
-    // IHDR Chunk
-    uint8_t ihdr[13];
-    uint32_t width = grid->resolution;
-    uint32_t height = grid->resolution;
-    
-    // Write width and height
-    ihdr[0] = (width >> 24) & 0xff;
-    ihdr[1] = (width >> 16) & 0xff;
-    ihdr[2] = (width >> 8) & 0xff;
-    ihdr[3] = width & 0xff;
-    ihdr[4] = (height >> 24) & 0xff;
-    ihdr[5] = (height >> 16) & 0xff;
-    ihdr[6] = (height >> 8) & 0xff;
-    ihdr[7] = height & 0xff;
-
-    ihdr[8] = 1;  // Bit depth (1 for black/white)
-    ihdr[9] = 3;  // Color type (3: indexed color)
-    ihdr[10] = 0; // Compression method
-    ihdr[11] = 0; // Filter method
-    ihdr[12] = 0; // Interlace method (none)
-
-    // Write IHDR chunk
-    uint32_t ihdr_len = htonl(13);  // IHDR data length (13 bytes)
-    fwrite(&ihdr_len, 4, 1, fptr);  // Write length
-    fwrite("IHDR", 1, 4, fptr);     // Write chunk type
-    fwrite(ihdr, 1, 13, fptr);      // Write IHDR data
-    uint32_t crc_ihdr = crc32(0, (unsigned char*)"IHDR", 4);
-    crc_ihdr = crc32(crc_ihdr, ihdr, 13);
-    fwrite(&crc_ihdr, 4, 1, fptr);
-
-    // PLTE Chunk (black and white palette)
-    unsigned char plte[6] = {
-        0x00, 0x00, 0x00,  // Black
-        0xFF, 0xFF, 0xFF   // White
-    };
-    uint32_t plte_len = htonl(6);   // Length of PLTE data (6 bytes)
-    fwrite(&plte_len, 4, 1, fptr);  // Write length
-    fwrite("PLTE", 1, 4, fptr);     // Write chunk type
-    fwrite(plte, 1, 6, fptr);       // Write PLTE data
-    uint32_t crc_plte = crc32(0, (unsigned char*)"PLTE", 4);
-    crc_plte = crc32(crc_plte, plte, 6);
-    fwrite(&crc_plte, 4, 1, fptr);
-
-    // IDAT Chunk (image data)
-    uint32_t idat_len = htonl(grid->resolution * grid->resolution / 8);  // Length of the image data (for simplicity)
-    fwrite(&idat_len, 4, 1, fptr);  // Write length
-    fwrite("IDAT", 1, 4, fptr);     // Write chunk type
-
-    // Write image data row by row
-    for (int i = 0; i < grid->resolution; i++) {
-        uint8_t byte = 0;
-        int bit_position = 7;
-
-        for (int j = 0; j < grid->resolution; j++) {
-            // If the particle is equal to particle_null, set the pixel to black (0), otherwise white (1)
-            uint8_t pixel_value = (grid->particles[i][j].posx == grid->particle_null.posx &&
-                                   grid->particles[i][j].posy == grid->particle_null.posy) ? 0 : 1;
-
-            // Set the bit for the current pixel in the byte
-            byte |= (pixel_value << bit_position);
-
-            // Move to the next bit
-            bit_position--;
-
-            // When we fill up one byte, write it to the file
-            if (bit_position < 0) {
-                fwrite(&byte, 1, 1, fptr);
-                byte = 0;  // Reset the byte
-                bit_position = 7;  // Reset the bit position
-            }
-        }
-
-        // If the row ends and there are remaining bits that haven't been written yet, write them
-        if (bit_position != 7) {
-            fwrite(&byte, 1, 1, fptr);
-        }
-    }
-
-    // IEND Chunk
-    uint32_t iend_len = 0;
-    fwrite(&iend_len, 4, 1, fptr);  // Write length
-    fwrite("IEND", 1, 4, fptr);     // Write chunk type
-    uint32_t crc_iend = crc32(0, (unsigned char*)"IEND", 4);
-    fwrite(&crc_iend, 4, 1, fptr);
-
-    fclose(fptr);
-    printf("[DEBUG] Grid written to PNG file successfully.\n");
-}
-
 int main() {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        printf("WSAStartup failed.\n");
-        return 1;
-    }
-
-    // Generate the CRC32 lookup table
-    generate_crc32_table();
-
     grid_t grid;
-
-    uint8_t particle_num = 40;
     uint32_t resolution = 128;
+    uint8_t particle_num = 40;
 
-    // Start the generation loop
+    particle_t particle_null = { -1, -1 }; // Initialize a null particle
+    particle_t origin_particle = { rand() % resolution, rand() % resolution };
+
+    // Initialize the grid and generate particles
+    grid_init(&grid, resolution, origin_particle, particle_null);
     generation_loop(&grid, particle_num, resolution);
 
-    // Write the grid to a PNG file
-    download_grid("test1.png", &grid);
+    // Generate image data and save it as a PNG file
+    uint8_t *image_data = NULL;
+    generate_image_data(&grid, &image_data);
+    make_png("output.png", image_data, resolution, resolution);
 
     // Cleanup memory
     for (int i = 0; i < grid.resolution; i++) {
-        free(grid.particles[i]);  // Free each row
+        free(grid.particles[i]);
     }
-    free(grid.particles);  // Free the row pointers
+    free(grid.particles);
+    free(image_data); // Free the image data memory
 
-    // Cleanup Winsock
-    WSACleanup();
-    printf("[DEBUG] Program completed successfully.\n");
     return 0;
 }
