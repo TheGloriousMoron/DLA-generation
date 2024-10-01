@@ -1,0 +1,8 @@
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/zlib.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/zlibstatic.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/example.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/minigzip.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/RUN_TESTS.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/INSTALL.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/ALL_BUILD.dir
+C:/Users/james/source/repos/DLA-generation/CMakeFiles/ZERO_CHECK.dir
