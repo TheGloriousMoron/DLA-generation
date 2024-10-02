@@ -1,0 +1,5 @@
+[DEBUG] Allocated memory for image data. Size: 256 bytes
+[DEBUG] Filling image data
+[DEBUG] Filled image data
+[DEBUG] Saving file
+Saved file

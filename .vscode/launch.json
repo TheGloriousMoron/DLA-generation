@@ -5,13 +5,13 @@
             "name": "Launch C Program",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\main.exe", // The compiled executable
+            "program": "${workspaceFolder}\\build\\dla_generation.exe", // The compiled executable
             "args": [],                                // Arguments for the program (if any)
             "stopAtEntry": false,                      // Set true to stop at main()
             "cwd": "${workspaceFolder}",               // Current working directory
             "environment": [],
             "console": "externalTerminal",             // Open an external terminal
-            "preLaunchTask": "Build C Program",        // Ensure it builds before running
+            "preLaunchTask": "Build C Program (Windows - MSVC)",        // Ensure it builds before running
             "internalConsoleOptions": "neverOpen"
         }
     ]

@@ -1,0 +1,76 @@
+[DEBUG] Creating particle array columns
+[DEBUG] Creating particle array row for column 0
+[DEBUG] Creating particle array row for column 1
+[DEBUG] Creating particle array row for column 2
+[DEBUG] Creating particle array row for column 3
+[DEBUG] Creating particle array row for column 4
+[DEBUG] Creating particle array row for column 5
+[DEBUG] Creating particle array row for column 6
+[DEBUG] Creating particle array row for column 7
+[DEBUG] Setting particle array 0, 0 to particle empty
+[DEBUG] Setting particle array 0, 1 to particle empty
+[DEBUG] Setting particle array 0, 2 to particle empty
+[DEBUG] Setting particle array 0, 3 to particle empty
+[DEBUG] Setting particle array 0, 4 to particle empty
+[DEBUG] Setting particle array 0, 5 to particle empty
+[DEBUG] Setting particle array 0, 6 to particle empty
+[DEBUG] Setting particle array 0, 7 to particle empty
+[DEBUG] Setting particle array 1, 0 to particle empty
+[DEBUG] Setting particle array 1, 1 to particle empty
+[DEBUG] Setting particle array 1, 2 to particle empty
+[DEBUG] Setting particle array 1, 3 to particle empty
+[DEBUG] Setting particle array 1, 4 to particle empty
+[DEBUG] Setting particle array 1, 5 to particle empty
+[DEBUG] Setting particle array 1, 6 to particle empty
+[DEBUG] Setting particle array 1, 7 to particle empty
+[DEBUG] Setting particle array 2, 0 to particle empty
+[DEBUG] Setting particle array 2, 1 to particle empty
+[DEBUG] Setting particle array 2, 2 to particle empty
+[DEBUG] Setting particle array 2, 3 to particle empty
+[DEBUG] Setting particle array 2, 4 to particle empty
+[DEBUG] Setting particle array 2, 5 to particle empty
+[DEBUG] Setting particle array 2, 6 to particle empty
+[DEBUG] Setting particle array 2, 7 to particle empty
+[DEBUG] Setting particle array 3, 0 to particle empty
+[DEBUG] Setting particle array 3, 1 to particle empty
+[DEBUG] Setting particle array 3, 2 to particle empty
+[DEBUG] Setting particle array 3, 3 to particle empty
+[DEBUG] Setting particle array 3, 4 to particle empty
+[DEBUG] Setting particle array 3, 5 to particle empty
+[DEBUG] Setting particle array 3, 6 to particle empty
+[DEBUG] Setting particle array 3, 7 to particle empty
+[DEBUG] Setting particle array 4, 0 to particle empty
+[DEBUG] Setting particle array 4, 1 to particle empty
+[DEBUG] Setting particle array 4, 2 to particle empty
+[DEBUG] Setting particle array 4, 3 to particle empty
+[DEBUG] Setting particle array 4, 4 to particle empty
+[DEBUG] Setting particle array 4, 5 to particle empty
+[DEBUG] Setting particle array 4, 6 to particle empty
+[DEBUG] Setting particle array 4, 7 to particle empty
+[DEBUG] Setting particle array 5, 0 to particle empty
+[DEBUG] Setting particle array 5, 1 to particle empty
+[DEBUG] Setting particle array 5, 2 to particle empty
+[DEBUG] Setting particle array 5, 3 to particle empty
+[DEBUG] Setting particle array 5, 4 to particle empty
+[DEBUG] Setting particle array 5, 5 to particle empty
+[DEBUG] Setting particle array 5, 6 to particle empty
+[DEBUG] Setting particle array 5, 7 to particle empty
+[DEBUG] Setting particle array 6, 0 to particle empty
+[DEBUG] Setting particle array 6, 1 to particle empty
+[DEBUG] Setting particle array 6, 2 to particle empty
+[DEBUG] Setting particle array 6, 3 to particle empty
+[DEBUG] Setting particle array 6, 4 to particle empty
+[DEBUG] Setting particle array 6, 5 to particle empty
+[DEBUG] Setting particle array 6, 6 to particle empty
+[DEBUG] Setting particle array 6, 7 to particle empty
+[DEBUG] Setting particle array 7, 0 to particle empty
+[DEBUG] Setting particle array 7, 1 to particle empty
+[DEBUG] Setting particle array 7, 2 to particle empty
+[DEBUG] Setting particle array 7, 3 to particle empty
+[DEBUG] Setting particle array 7, 4 to particle empty
+[DEBUG] Setting particle array 7, 5 to particle empty
+[DEBUG] Setting particle array 7, 6 to particle empty
+[DEBUG] Setting particle array 7, 7 to particle empty
+[DEBUG] Origin particle created at 0, 3
+[DEBUG] Origin particle set
+[DEBUG] Grid successfully constructed

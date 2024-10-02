@@ -1,50 +1,52 @@
-#include "defs.h" // src/image.c
+#include "defs.h"
 
-void grid_to_raw_rgba(grid_t *grid, rgba_t *rgba_buffer) {
-    // Convert the grid to the rgba_buffer in row-major order
-    for (int y = 0; y < grid->resolution; y++) {
-        for (int x = 0; x < grid->resolution; x++) {
-            uint32_t index = y * grid->resolution + x;  // Directly calculate the array index
-            if (grid->particles[x][y].posx != -1) {
-                rgba_buffer[index] = (rgba_t)PARTICLE_COLOR;  // Assign particle color
+void grid_to_png(grid_t *grid, char *filename) {
+    log_t *log = (log_t*)malloc(sizeof(log_t));
+    char *log_filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_to_png.txt";
+    log_constructor(log, log_filename);
+
+    int grid_size_squared = grid->grid_size * grid->grid_size; // 128 * 128 = 16384
+    int array_size = grid_size_squared * 4;                    // 16384 * 4 = 65536
+    uint8_t *image = (uint8_t*)malloc(array_size);
+    if (!image) {
+        log_write(log, "[DEBUG] Failed to allocate memory for image data %d\n", array_size);
+        exit(-1);
+    } else {
+        log_write(log, "[DEBUG] Allocated memory for image data. Size: %d bytes\n", array_size);
+    }
+
+    // fill image data
+    log_write(log, "[DEBUG] Filling image data\n");
+    for (int y = 0; y < grid->grid_size; y++) {
+        for (int x = 0; x < grid->grid_size; x++) {
+            int offset = (y * grid->grid_size + x) * 4;
+            if (Vector2_is_equal(grid->particle_array[x][y], grid->particle_empty)) {
+                uint8_t tmp_col[4] = EMPTY_COLOR;
+                image[offset + 0] = tmp_col[0]; // r
+                image[offset + 1] = tmp_col[1]; // g
+                image[offset + 2] = tmp_col[2]; // b
+                image[offset + 3] = tmp_col[3]; // a
             } else {
-                rgba_buffer[index] = (rgba_t)EMPTY_COLOR;  // Assign empty color
+                uint8_t tmp_col[4] = PARTICLE_COLOR;
+                image[offset + 0] = tmp_col[0]; // r
+                image[offset + 1] = tmp_col[1]; // g
+                image[offset + 2] = tmp_col[2]; // b
+                image[offset + 3] = tmp_col[3]; // a
             }
         }
     }
-    // The raw RGBA data is now in rgba_buffer in row-major order
-}
+    log_write(log, "[DEBUG] Filled image data\n");
 
+    log_write(log, "[DEBUG] Saving file\n");
+    unsigned error = lodepng_encode32_file(filename, image, grid->grid_size, grid->grid_size);
 
-void save_raw_rgba(grid_t *grid, char *file_name) {
-    rgba_t *raw_rgb = malloc(grid->resolution * grid->resolution * sizeof(rgba_t));  // Allocate memory for raw RGB data
-    if (!raw_rgb) {
-        printf("Failed to allocate memory for raw RGBA data\n");
-        return;
-    }
-
-    grid_to_raw_rgba(grid, raw_rgb);  // Assuming this function fills the raw_rgb buffer
-
-    uint8_t *png_encoded = NULL;  // This will hold the encoded PNG data
-    size_t png_size = 0;  // size_t is the correct type for png_size
-
-    // Encode raw RGBA to PNG format
-    unsigned error = lodepng_encode32(&png_encoded, &png_size, (unsigned char *)raw_rgb, grid->resolution, grid->resolution);
     if (error) {
-        printf("Error encoding PNG: %s\n", lodepng_error_text(error));
-        free(raw_rgb);
-        return;
-    }
-
-    // Save the PNG file
-    error = lodepng_save_file(png_encoded, png_size, file_name);
-    if (error) {
-        printf("Error saving PNG: %s\n", lodepng_error_text(error));
+        log_write(log, "Error in saving file. Error: %u: %s\n", error, lodepng_error_text(error));
     } else {
-        printf("PNG file saved successfully: %s\n", file_name);
+        log_write(log, "Saved file\n");
     }
 
-    // Free allocated memory
-    free(png_encoded);
-    free(raw_rgb);
+    free(image);
+
+    log_deconstructor(log);
 }

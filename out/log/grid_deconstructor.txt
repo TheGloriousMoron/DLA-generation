@@ -1,0 +1,20 @@
+[DEBUG] Freeing particle row 0
+[DEBUG] Freed particle row 0
+[DEBUG] Freeing particle row 1
+[DEBUG] Freed particle row 1
+[DEBUG] Freeing particle row 2
+[DEBUG] Freed particle row 2
+[DEBUG] Freeing particle row 3
+[DEBUG] Freed particle row 3
+[DEBUG] Freeing particle row 4
+[DEBUG] Freed particle row 4
+[DEBUG] Freeing particle row 5
+[DEBUG] Freed particle row 5
+[DEBUG] Freeing particle row 6
+[DEBUG] Freed particle row 6
+[DEBUG] Freeing particle row 7
+[DEBUG] Freed particle row 7
+[DEBUG] Freeing particle array columns
+[DEBUG] Freed particle array
+[DEBUG] Freeing grid
+[DEBUG] Grid freed

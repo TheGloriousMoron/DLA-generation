@@ -8,11 +8,14 @@
             "args": [
                 "/Zi",
                 "/EHsc",
-                "/Fe${workspaceFolder}\\build\\main.exe",  // Output to build directory
+                "/Fe${workspaceFolder}\\build\\dla_generation.exe",  // Output to build directory
                 "${workspaceFolder}\\src\\main.c",
                 "${workspaceFolder}\\src\\dla.c",
                 "${workspaceFolder}\\src\\image.c",
-                "${workspaceFolder}\\include\\lodepng\\lodepng.c"
+                "${workspaceFolder}\\src\\_math.c",
+                "${workspaceFolder}\\src\\log.c",
+                "${workspaceFolder}\\include\\lodepng\\lodepng.c",
+                "/I${workspaceFolder}/include"
             ],
             "group": {
                 "kind": "build",
@@ -39,7 +42,7 @@
                 "${workspaceFolder}/include/lodepng/lodepng.c",
                 "-I${workspaceFolder}/include/",
                 "-o",
-                "${workspaceFolder}/build/main"  // Output to build directory
+                "${workspaceFolder}/build/dla_generation"  // Output to build directory
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build"  // Ensure build directory is used
