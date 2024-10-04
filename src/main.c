@@ -11,7 +11,7 @@ int main() {
 
     grid_run_simulation(grid);
 
-    save_grid(grid, "test1.png");
+    save_grid(grid, "test2.png");
 
     grid_free(grid);
 

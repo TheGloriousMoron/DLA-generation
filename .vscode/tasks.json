@@ -12,8 +12,6 @@
                 "${workspaceFolder}\\src\\main.c",
                 "${workspaceFolder}\\src\\dla.c",
                 "${workspaceFolder}\\src\\image.c",
-                "${workspaceFolder}\\src\\_math.c",
-                "${workspaceFolder}\\src\\log.c",
                 "${workspaceFolder}\\include\\lodepng\\lodepng.c",
                 "/I${workspaceFolder}/include"
             ],
