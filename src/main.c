@@ -4,8 +4,8 @@ int main() {
     srand(time(NULL));
 
     grid_t grid;
-    uint32_t resolution = 8;
-    uint32_t particle_num = 8 * 8;
+    uint32_t resolution = 4;
+    uint32_t particle_num = 4 * 4;
 
     vector2_t particle_empty = {-1, -1};  // Initialize the "null" particle
 

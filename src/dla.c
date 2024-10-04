@@ -1,7 +1,5 @@
 #include "defs.h"
 
-#include "defs.h"
-
 void grid_constructor(grid_t *grid, uint32_t size, uint32_t particle_num) {
     // Allocate memory for log
     log_t *log = (log_t*)malloc(sizeof(log_t));
@@ -101,13 +99,28 @@ void grid_set_particle(grid_t *grid, vector2_t *p) {
 
     log_constructor(log, filename);
 
+    // Check if particle position is within bounds
+    if (p->x < 0 || p->x >= grid->grid_size || p->y < 0 || p->y >= grid->grid_size) {
+        log_write(log, "[ERROR] Invalid particle position at %d, %d\n", p->x, p->y);
+        log_deconstructor(log);
+        return;
+    }
+
+    // Set adjacent particles if they are empty
     for (int x = -1; x < 3; x += 2) {
         for (int y = -1; y < 3; y += 2) {
-            if (Vector2_is_equal(grid->particle_array[p->x + x][p->y + y], grid->particle_empty)) {
-                grid->particle_array[p->x + x][p->y + y] = grid->particle_adjecent;
+            int new_x = p->x + x;
+            int new_y = p->y + y;
+            // Check if the new coordinates are within grid bounds
+            if (new_x >= 0 && new_x < grid->grid_size && new_y >= 0 && new_y < grid->grid_size) {
+                if (Vector2_is_equal(grid->particle_array[new_x][new_y], grid->particle_empty)) {
+                    grid->particle_array[new_x][new_y] = grid->particle_adjecent;
+                }
             }
         }
     }
+
+    // Set the particle at its position
     grid->particle_array[p->x][p->y] = Vector2_int(p->x, p->y);
 
     log_write(log, "[DEBUG] Particle set at position: %d, %d\n", p->x, p->y);
@@ -127,6 +140,13 @@ bool grid_check_particle(grid_t *grid, vector2_t *p) {
 #endif
 
     log_constructor(log, filename);
+
+    // Check if particle position is within bounds
+    if (p->x < 0 || p->x >= grid->grid_size || p->y < 0 || p->y >= grid->grid_size) {
+        log_write(log, "[ERROR] Invalid particle position at %d, %d\n", p->x, p->y);
+        log_deconstructor(log);
+        return false;
+    }
 
     log_write(log, "[DEBUG] Checking particle at position: %d, %d\n", p->x, p->y);
 
@@ -183,55 +203,46 @@ void grid_active(grid_t *grid) {
         // Randomly move the particle until it "sticks" to an occupied space
         while (!is_done) {
             log_write(log, "[DEBUG] Particle %d is entering movement loop\n", i);
-            uint8_t move_dir = rand() % 4; // Generate a random direction (0-3)
-            log_write(log, "[DEBUG] Particle %d's move direction is %d\n", i, move_dir);
+            uint8_t move_dir = rand() % 4;
 
-            // Movement logic with boundary checking
-            if (move_dir == 0 && p.x + 1 < grid->grid_size) { // Move right
+            if (move_dir == 0 && p.x + 1 < grid->grid_size) {  // Move right
                 vector2_t _p = Vector2_int(p.x + 1, p.y);
                 if (grid_check_particle(grid, &_p)) {
                     grid_set_particle(grid, &_p);
                     is_done = true;
-                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
                 } else {
                     p.x += 1;
-                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
                 }
-            } else if (move_dir == 1 && p.x - 1 >= 0) { // Move left
+            } else if (move_dir == 1 && p.x - 1 >= 0) {  // Move left
                 vector2_t _p = Vector2_int(p.x - 1, p.y);
                 if (grid_check_particle(grid, &_p)) {
                     grid_set_particle(grid, &_p);
                     is_done = true;
-                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
                 } else {
                     p.x -= 1;
-                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
                 }
-            } else if (move_dir == 2 && p.y + 1 < grid->grid_size) { // Move down
+            } else if (move_dir == 2 && p.y + 1 < grid->grid_size) {  // Move down
                 vector2_t _p = Vector2_int(p.x, p.y + 1);
                 if (grid_check_particle(grid, &_p)) {
                     grid_set_particle(grid, &_p);
                     is_done = true;
-                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
                 } else {
                     p.y += 1;
-                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
                 }
-            } else if (move_dir == 3 && p.y - 1 >= 0) { // Move up
+            } else if (move_dir == 3 && p.y - 1 >= 0) {  // Move up
                 vector2_t _p = Vector2_int(p.x, p.y - 1);
                 if (grid_check_particle(grid, &_p)) {
                     grid_set_particle(grid, &_p);
                     is_done = true;
-                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
                 } else {
                     p.y -= 1;
-                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
                 }
             }
         }
     }
 
     // Deconstruct log
+    log_write(log, "[DEBUG] Finished grid active\n");
     log_deconstructor(log);
 }
 
