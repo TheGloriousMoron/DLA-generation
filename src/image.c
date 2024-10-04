@@ -1,42 +1,46 @@
 #include "defs.h"
 
 void save_grid(grid_t *grid, char *name) {
-    // Allocate memory for the output file path
-    char *filename = (char*)malloc(strlen(OUTPATH) + strlen(name) + 1);
+    // Allocate enough space for the full file path including the null terminator
+    size_t filename_len = strlen(OUTPATH) + strlen(name) + 1; // +1 for the null terminator
+    char *filename = (char*)malloc(filename_len);
+
     if (!filename) {
-        perror("[ERROR] Failed to allocate memory for filename");
-        exit(EXIT_FAILURE);
+        perror("[ERROR] Unable to allocate memory for filename");
+        exit(-1);
     }
 
-    // Create the full file path
-    strcpy(filename, OUTPATH);
-    strcat(filename, name);
+    // Copy the output path and the name into the filename buffer
+    strcpy(filename, OUTPATH);  // Copy the output path first
+    strcat(filename, name);     // Append the filename
 
-    // Allocate memory for the image data (RGBA)
+    // Allocate memory for the image (RGBA - 4 bytes per pixel)
     uint8_t *image = (uint8_t*)malloc(sizeof(uint8_t) * (grid->size * grid->size) * 4);
+
     if (!image) {
         perror("[ERROR] Unable to allocate memory for image");
-        free(filename);
-        exit(EXIT_FAILURE);
+        free(filename); // Free the filename memory before exiting
+        exit(-1);
     }
 
-    // Fill the image with grid data (RGBA format)
+    // Fill the image with the grid data
     for (int r = 0; r < grid->size; r++) {
         for (int c = 0; c < grid->size; c++) {
-            // Calculate the offset in row-major order
-            int offset = (r * grid->size + c) * 4; // Each pixel has 4 bytes (RGBA)
-            
-            if (grid->array[r][c] == grid->fill_state) { // Particle
+            // Calculate the offset in row-major order (4 bytes per pixel)
+            int offset = (r * grid->size + c) * 4;
+
+            // Check the state of the grid cell and assign the corresponding color
+            if (grid->array[r][c] == grid->fill_state) {
                 image[offset + 0] = PARTICLE_COLOR[0]; // Red
                 image[offset + 1] = PARTICLE_COLOR[1]; // Green
                 image[offset + 2] = PARTICLE_COLOR[2]; // Blue
                 image[offset + 3] = PARTICLE_COLOR[3]; // Alpha
-            } else if (grid->array[r][c] == grid->adjecent_state) { // Adjacent
+            } else if (grid->array[r][c] == grid->adjecent_state) {
                 image[offset + 0] = ADJACENT_COLOR[0];
                 image[offset + 1] = ADJACENT_COLOR[1];
                 image[offset + 2] = ADJACENT_COLOR[2];
                 image[offset + 3] = ADJACENT_COLOR[3];
-            } else if (grid->array[r][c] == grid->empty_state) { // Empty
+            } else if (grid->array[r][c] == grid->empty_state) {
                 image[offset + 0] = EMPTY_COLOR[0];
                 image[offset + 1] = EMPTY_COLOR[1];
                 image[offset + 2] = EMPTY_COLOR[2];
@@ -45,13 +49,14 @@ void save_grid(grid_t *grid, char *name) {
         }
     }
 
-    // Use lodepng to encode the image and save to file
+    // Encode the image to a PNG file
     unsigned error = lodepng_encode_file(filename, image, grid->size, grid->size, LCT_RGBA, 8);
     if (error) {
         printf("Error %u: %s\n", error, lodepng_error_text(error));
+        printf("Error %u: %s\n", error, lodepng_error_text(error));
     }
 
-    // Clean up allocated memory
+    // Free allocated memory
     free(image);
     free(filename);
 }
