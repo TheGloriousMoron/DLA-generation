@@ -10,59 +10,45 @@
 #include <lodepng/lodepng.h>
 #include <stdarg.h>
 
-// Log
-
-typedef struct {
-    char *filename;
-} log_t;
-
-void log_constructor(log_t *log, const char *filename);
-
-void log_write(log_t *log, const char *format, ...);
-
-void log_deconstructor(log_t *log);  // Fixed typo
-
-// MATH //
-
-typedef struct {
-    int32_t x, y, z;
-} vector3_t;
-
-typedef struct {
-    int32_t x, y;
-} vector2_t;
-
-vector2_t Vector2_arr(int32_t *arr);
-
-vector2_t Vector2_int(int32_t x, int32_t y);
-
-bool Vector2_is_equal(vector2_t v1, vector2_t v2);
+#ifndef _WIN32
+    #define OUTPATH "C:\\Users\\james\\source\\repos\\dla-generation\\out\\"
+    #define LOGPATH "C:\\Users\\james\\source\\repos\\dla-generation\\out\\log\\"
+#else
+    #define OUTPATH "/workspaces/DLA-generation/out"
+    #define LOGPATH "/workspaces/DLA-generation/out/log"
+#endif
 
 // --DLA-GENERATION-START-- //
 
 typedef struct {
-    uint32_t grid_size;
-    vector2_t **particle_array;
-    uint32_t particle_num;
-    vector2_t particle_empty;
-    vector2_t particle_adjecent;
+    int8_t fill_state;
+    int8_t adjecent_state;
+    int8_t empty_state;
+
+    uint32_t max_particles;
+    uint32_t current_particles;
+
+    uint32_t size;
+
+    uint32_t iteration_max;
+
+    int8_t **array;
 } grid_t;
 
-void grid_constructor(grid_t *grid, uint32_t size, uint32_t particle_num);
+grid_t* grid_init(uint32_t size, uint32_t max_particles, uint32_t iteration_max);
+bool check_particle_inside(grid_t *grid, int32_t *pos);
+bool check_particle_adjecent(grid_t *grid, int32_t *pos);
+bool check_position_clear(grid_t *grid, int32_t *p);
+void set_particle(grid_t *grid, int32_t *pos);
+void grid_run_simulation(grid_t *grid);
+void grid_free(grid_t *grid);
 
-void grid_set_particle(grid_t *grid, vector2_t *p);
+// --IMAGE-GENERATION-START-- //
 
-bool grid_check_particle(grid_t *grid, vector2_t *p);
+static const uint8_t PARTICLE_COLOR[4] = {0xff, 0xff, 0xff, 0xff};
+static const uint8_t ADJACENT_COLOR[4] = {0xff, 0xff, 0xff, 0xff};
+static const uint8_t EMPTY_COLOR[4] = {0x00, 0x00, 0x00, 0xff};
 
-void grid_active(grid_t *grid);
-
-void grid_deconstructor(grid_t *grid);
-
-// --DLA-GENERATION-END-- //
-
-#define PARTICLE_COLOR {0xff, 0xff, 0xff, 0xff}
-#define EMPTY_COLOR {0x00, 0x00, 0x00, 0xff}
-
-void grid_to_png(grid_t *grid, char *filename);
+void save_grid(grid_t *grid, char *filename);
 
 #endif

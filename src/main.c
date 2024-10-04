@@ -1,26 +1,31 @@
 #include "defs.h"
 
-int main() {
-    srand(time(NULL));
+int main(int argc, char *argv[]) {
+    // Define grid parameters (size, max particles, and max iterations)
+    uint32_t grid_size = 2;         // Example grid size (you can adjust)
+    uint32_t max_particles = 2 * 2;   // Maximum number of particles to place
+    uint32_t iteration_max = 256;   // Maximum number of iterations per particle
 
-    grid_t grid;
-    uint32_t resolution = 4;
-    uint32_t particle_num = 4 * 4;
+    // Initialize the grid
+    grid_t *grid = grid_init(grid_size, max_particles, iteration_max);
+    if (!grid) {
+        fprintf(stderr, "[ERROR] Failed to initialize grid.\n");
+        return EXIT_FAILURE;
+    }
 
-    vector2_t particle_empty = {-1, -1};  // Initialize the "null" particle
+    // Start the DLA simulation
+    printf("[DEBUG] Running DLA simulation with a grid of size %u and max particles %u\n", grid_size, max_particles);
+    grid_run_simulation(grid);
 
-    printf("[DEBUG] beginning grid constructor\n");
-    grid_constructor(&grid, resolution, particle_num);
+    // Save the final grid state to a PNG image
+    char *output_file = "dla_output.png";  // Output file name
+    printf("[DEBUG] Saving grid to %s\n", output_file);
+    save_grid(grid, output_file);
 
-    printf("[DEBUG] beginning grid active\n");
-    grid_active(&grid);
+    // Free the grid
+    grid_free(grid);
 
-    printf("[DEBUG] beginnning grid to png\n");
-    grid_to_png(&grid, "fill-test.png");
-    
-    printf("[DEBUG] beginning grid deconstructor");
-    grid_deconstructor(&grid);
+    printf("[DEBUG] Simulation complete. Image saved.\n");
 
-    printf("[DEBUG] DONE");
-    return EXIT_SUCCESS;  // Standard exit code for success
+    return EXIT_SUCCESS;
 }
