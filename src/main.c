@@ -16,7 +16,7 @@ int main() {
     grid_active(&grid);
 
     printf("[DEBUG] beginnning grid to png\n");
-    grid_to_png(&grid, "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\fill-test.png");
+    grid_to_png(&grid, "fill-test.png");
     
     printf("[DEBUG] beginning grid deconstructor");
     grid_deconstructor(&grid);

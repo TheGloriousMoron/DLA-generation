@@ -1,75 +1,156 @@
 #include "defs.h"
 
+#include "defs.h"
 
 void grid_constructor(grid_t *grid, uint32_t size, uint32_t particle_num) {
     // Allocate memory for log
     log_t *log = (log_t*)malloc(sizeof(log_t));
+
+#ifdef _WIN32
     char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_constructor.txt";
+#else
+    char *filename = "/workspaces/DLA-generation/out/log/grid_constructor.txt";
+#endif
+
     log_constructor(log, filename);  // Initialize log
+
+    // Log grid size and particle number
+    log_write(log, "[DEBUG] Initializing grid constructor with size: %u and particle_num: %u\n", size, particle_num);
+
+    // Check if grid size is valid
+    if (size <= 0) {
+        log_write(log, "[ERROR] Invalid grid size: %u\n", size);
+        log_deconstructor(log);
+        return;  // Exit early to avoid further issues
+    }
 
     grid->grid_size = size;
     grid->particle_num = particle_num;
-    grid->particle_empty = Vector2_int(-1, -1); // Use a "null" particle as empty indicator
+    grid->particle_empty = Vector2_int(-1, -1); // "null" particle indicator
     grid->particle_adjecent = Vector2_int(-2, -2);
 
-    // Allocate memory for the particle array
-    log_write(log, "[DEBUG] Creating particle array columns\n");
-    grid->particle_array = malloc(sizeof(vector2_t*) * grid->grid_size); // Allocate memory for each column of the grid
+    // Allocate memory for the particle array (columns)
+    log_write(log, "[DEBUG] Allocating memory for particle array\n");
+    grid->particle_array = malloc(sizeof(vector2_t*) * grid->grid_size);
 
-    for (int x = 0; x < grid->grid_size; x++) {
-        log_write(log, "[DEBUG] Creating particle array row for column %d\n", x);
-        grid->particle_array[x] = malloc(sizeof(vector2_t) * grid->grid_size);
+    // Check if memory allocation for particle_array succeeded
+    if (grid->particle_array == NULL) {
+        log_write(log, "[ERROR] Failed to allocate memory for particle array (columns)\n");
+        log_deconstructor(log);
+        return;  // Exit if memory allocation fails
     }
 
-    // Set all of the particles to particle_empty
+    // Allocate memory for each row in the particle array
+    for (int x = 0; x < grid->grid_size; x++) {
+        log_write(log, "[DEBUG] Allocating memory for particle row %d\n", x);
+        grid->particle_array[x] = malloc(sizeof(vector2_t) * grid->grid_size);
+
+        // Check if memory allocation for each row succeeded
+        if (grid->particle_array[x] == NULL) {
+            log_write(log, "[ERROR] Failed to allocate memory for particle row %d\n", x);
+
+            // Free already allocated memory if we encounter an error
+            for (int i = 0; i < x; i++) {
+                free(grid->particle_array[i]);
+                log_write(log, "[DEBUG] Freed row %d\n", i);
+            }
+
+            free(grid->particle_array);
+            log_write(log, "[DEBUG] Freed particle array (columns)\n");
+
+            log_deconstructor(log);
+
+            return;  // Exit if memory allocation fails
+        }
+    }
+
+    // Set all particles in the array to particle_empty
     for (int x = 0; x < grid->grid_size; x++) {
         for (int y = 0; y < grid->grid_size; y++) {
-            log_write(log, "[DEBUG] Setting particle array %d, %d to particle empty\n", x, y);
             grid->particle_array[x][y] = grid->particle_empty;
+            log_write(log, "[DEBUG] Set particle_array[%d][%d] to particle_empty\n", x, y);
         }
     }
 
     // Set the origin particle
     vector2_t origin_particle;
-    int32_t r1 = rand() % grid->grid_size; 
+    int32_t r1 = rand() % grid->grid_size;
     int32_t r2 = rand() % grid->grid_size;
     origin_particle = Vector2_int(r1, r2);
     log_write(log, "[DEBUG] Origin particle created at %d, %d\n", origin_particle.x, origin_particle.y);
+
+    // Set the origin particle in the grid
     grid_set_particle(grid, &origin_particle);
-    log_write(log, "[DEBUG] Origin particle set\n");
+    log_write(log, "[DEBUG] Origin particle set in grid\n");
 
     log_write(log, "[DEBUG] Grid successfully constructed\n");
 
     // Deconstruct log
     log_deconstructor(log);
-    free(log);  // Free allocated memory for log
 }
 
 void grid_set_particle(grid_t *grid, vector2_t *p) {
-    for (int x = -1; x < 3; x+=2) {
-        for (int y = -1; y < 3; y+=2) {
+    log_t *log = (log_t*)malloc(sizeof(log_t));
+
+    // Platform-specific logging path
+#ifdef _WIN32
+    char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_set_particle.txt";
+#else
+    char *filename = "/workspaces/DLA-generation/out/log/grid_set_particle.txt";
+#endif
+
+    log_constructor(log, filename);
+
+    for (int x = -1; x < 3; x += 2) {
+        for (int y = -1; y < 3; y += 2) {
             if (Vector2_is_equal(grid->particle_array[p->x + x][p->y + y], grid->particle_empty)) {
                 grid->particle_array[p->x + x][p->y + y] = grid->particle_adjecent;
             }
         }
     }
     grid->particle_array[p->x][p->y] = Vector2_int(p->x, p->y);
+
+    log_write(log, "[DEBUG] Particle set at position: %d, %d\n", p->x, p->y);
+
+    // Deconstruct log
+    log_deconstructor(log);
 }
 
 bool grid_check_particle(grid_t *grid, vector2_t *p) {
-    if (Vector2_is_equal(grid->particle_array[p->x][p->y], grid->particle_adjecent)) {
-        return true;
-    } else {
-        return false;
-    }
+    log_t *log = (log_t*)malloc(sizeof(log_t));
+
+    // Platform-specific logging path
+#ifdef _WIN32
+    char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_check_particle.txt";
+#else
+    char *filename = "/workspaces/DLA-generation/out/log/grid_check_particle.txt";
+#endif
+
+    log_constructor(log, filename);
+
+    log_write(log, "[DEBUG] Checking particle at position: %d, %d\n", p->x, p->y);
+
+    bool result = Vector2_is_equal(grid->particle_array[p->x][p->y], grid->particle_adjecent);
+    
+    log_write(log, "[DEBUG] Particle check result: %s\n", result ? "true" : "false");
+
+    // Deconstruct log
+    log_deconstructor(log);
+
+    return result;
 }
 
 void grid_active(grid_t *grid) {
-    // Allocate memory for log
     log_t *log = (log_t*)malloc(sizeof(log_t));
-    char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_active.txt";
-    log_constructor(log, filename);  // Initialize log
 
+    // Platform-specific logging path
+#ifdef _WIN32
+    char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_active.txt";
+#else
+    char *filename = "/workspaces/DLA-generation/out/log/grid_active.txt";
+#endif
+
+    log_constructor(log, filename);
     log_write(log, "[DEBUG] Started grid active\n");
 
     // Simulate particle movement
@@ -78,7 +159,8 @@ void grid_active(grid_t *grid) {
         bool is_done = false;
         bool is_stuck = true;
 
-        int32_t r1 = rand() % grid->grid_size; 
+        // Generate random start position
+        int32_t r1 = rand() % grid->grid_size;
         int32_t r2 = rand() % grid->grid_size;
         vector2_t p = Vector2_int(r1, r2); // Random start position
         log_write(log, "[DEBUG] Particle %d created at: %d, %d\n", i, r1, r2);
@@ -91,7 +173,7 @@ void grid_active(grid_t *grid) {
                 log_write(log, "[DEBUG] Particle %d is not stuck anymore\n", i);
             } else {
                 // Generate a new random position if the current one is occupied
-                r1 = rand() % grid->grid_size; 
+                r1 = rand() % grid->grid_size;
                 r2 = rand() % grid->grid_size;
                 p = Vector2_int(r1, r2);
                 log_write(log, "[DEBUG] Particle %d is now at: %d, %d\n", i, r1, r2);
@@ -104,27 +186,65 @@ void grid_active(grid_t *grid) {
             uint8_t move_dir = rand() % 4; // Generate a random direction (0-3)
             log_write(log, "[DEBUG] Particle %d's move direction is %d\n", i, move_dir);
 
-            if (move_dir == 0) {
-
-            } else if (move_dir == 1) {
-                
-            } else if (move_dir == 2) {
-
-            } else if (move_dir == 3) {
-
+            // Movement logic with boundary checking
+            if (move_dir == 0 && p.x + 1 < grid->grid_size) { // Move right
+                vector2_t _p = Vector2_int(p.x + 1, p.y);
+                if (grid_check_particle(grid, &_p)) {
+                    grid_set_particle(grid, &_p);
+                    is_done = true;
+                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
+                } else {
+                    p.x += 1;
+                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
+                }
+            } else if (move_dir == 1 && p.x - 1 >= 0) { // Move left
+                vector2_t _p = Vector2_int(p.x - 1, p.y);
+                if (grid_check_particle(grid, &_p)) {
+                    grid_set_particle(grid, &_p);
+                    is_done = true;
+                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
+                } else {
+                    p.x -= 1;
+                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
+                }
+            } else if (move_dir == 2 && p.y + 1 < grid->grid_size) { // Move down
+                vector2_t _p = Vector2_int(p.x, p.y + 1);
+                if (grid_check_particle(grid, &_p)) {
+                    grid_set_particle(grid, &_p);
+                    is_done = true;
+                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
+                } else {
+                    p.y += 1;
+                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
+                }
+            } else if (move_dir == 3 && p.y - 1 >= 0) { // Move up
+                vector2_t _p = Vector2_int(p.x, p.y - 1);
+                if (grid_check_particle(grid, &_p)) {
+                    grid_set_particle(grid, &_p);
+                    is_done = true;
+                    log_write(log, "[DEBUG] Particle %d stuck at: %d, %d\n", i, _p.x, _p.y);
+                } else {
+                    p.y -= 1;
+                    log_write(log, "[DEBUG] Particle %d moved to: %d, %d\n", i, p.x, p.y);
+                }
             }
         }
     }
 
     // Deconstruct log
     log_deconstructor(log);
-    free(log);  // Free allocated memory for log
 }
 
 void grid_deconstructor(grid_t *grid) {
-    // Allocate memory for log
     log_t *log = (log_t*)malloc(sizeof(log_t));
+
+    // Platform-specific logging path
+#ifdef _WIN32
     char *filename = "C:\\Users\\james\\source\\repos\\DLA-generation\\out\\log\\grid_deconstructor.txt";
+#else
+    char *filename = "/workspaces/DLA-generation/out/log/grid_deconstructor.txt";
+#endif
+
     log_constructor(log, filename);  // Initialize log
 
     // Free each row in the array
@@ -144,5 +264,4 @@ void grid_deconstructor(grid_t *grid) {
 
     // Deconstruct log
     log_deconstructor(log);
-    free(log);  // Free allocated memory for log
 }

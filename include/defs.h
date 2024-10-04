@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <lodepng/lodepng.h>
-#include <Windows.h>
 #include <stdarg.h>
 
 // Log
@@ -51,7 +50,7 @@ typedef struct {
 
 void grid_constructor(grid_t *grid, uint32_t size, uint32_t particle_num);
 
-void grid_set_particle(grid_t *grid, vector2_t particle);
+void grid_set_particle(grid_t *grid, vector2_t *p);
 
 bool grid_check_particle(grid_t *grid, vector2_t *p);
 
