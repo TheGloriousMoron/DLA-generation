@@ -1,8 +1,43 @@
 #include "defs.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+
+char OUTPATH[MAX_PATH_LENGTH];
+char LOGPATH[MAX_PATH_LENGTH];
+
+#ifdef _WIN32
+void win_get_outpath(char *outpath) {
+    char exe_path[MAX_PATH_LENGTH];
+    GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH);
+
+    char *pos = strstr(exe_path, "build");
+    if (pos != NULL) {
+        strcpy(pos, "out\\");
+    } else {
+        strcat(exe_path, "\\out\\");
+    }
+
+    strcpy(outpath, exe_path);
+}
+#else
+void unix_get_outpath(char *outpath) {
+    char exe_path[MAX_PATH_LENGTH];
+    ssize_t count = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (count != -1) {
+        exe_path[count] = '\0'; // Null-terminate the string
+    } else {
+        perror("readlink");
+        exit(1);
+    }
+
+    char *pos = strstr(exe_path, "build");
+    if (pos != NULL) {
+        strcpy(pos, "out/");
+    } else {
+        strcat(exe_path, "/out/");
+    }
+
+    strcpy(outpath, exe_path);
+}
+#endif
 
 // CMD Arguments:
 // 1 grid size
@@ -68,6 +103,14 @@ void free_args(arguments_t *arguments) {
 }
 
 int main(int argc, char **argv) {
+    #ifdef _WIN32
+        win_get_outpath(OUTPATH);
+        win_get_outpath(LOGPATH);
+    #else
+        unix_get_outpath(OUTPATH);
+        unix_get_outpath(LOGPATH);
+    #endif
+
     // Seed random number generator
     srand((unsigned int)time(NULL));
 
