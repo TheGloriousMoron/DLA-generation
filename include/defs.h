@@ -24,7 +24,7 @@
 typedef struct {
     // paricle states
     int8_t fill_state;
-    int8_t adjecent_state;
+    int8_t adjacent_state;
     int8_t empty_state;
 
     uint32_t max_particles;
@@ -55,11 +55,11 @@ void grid_free(grid_t *grid);
 // --IMAGE-GENERATION-START-- //
 
 static const uint8_t PARTICLE_COLOR[4] = {0xff, 0xff, 0xff, 0xff};
-static const uint8_t ADJACENT_COLOR[4] = {0xff, 0xff, 0xff, 0xff};
+static const uint8_t ADJACENT_COLOR[4] = {0x80, 0x80, 0x80, 0xff};
 static const uint8_t EMPTY_COLOR[4] = {0x00, 0x00, 0x00, 0xff};
 
 
-void save_grid(grid_t *grid, char *filename);
-void save_grid(grid_t *grid, char *filename);
+void save_grid_png(grid_t *grid, char *filename);
+void save_grid_txt(grid_t *grid, char *filename);
 
 #endif

@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch C Program",
+            "name": "Launch C Program (USE)",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\build\\dla_generation.exe", // The compiled executable
