@@ -14,6 +14,13 @@ Cross-platform support for Windows and Unix-like systems.
 ## Installation
 Install one of the releases and then extract the zip file to the directory of your choice. There is no compilation needed to run the project as the exe is already included in the release.
 
+### Compilation
+#### VSCode
+1. Open the folder in VSCode.
+2. Press tab.
+3. Type in "task " or click on the "Run Task" option.
+4. Click on the compilation task that works with the compiler you are using. (MSVC) or (GCC)
+
 ## Usage
 ### Arguments
 1. A positive integer that is the size of the grid, cannot be 0.
