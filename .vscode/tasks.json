@@ -8,10 +8,8 @@
             "args": [
                 "/Zi",
                 "/EHsc",
-                "/Fe${workspaceFolder}\\build\\dla_generation",
-                "${workspaceFolder}\\src\\main.c",
-                "${workspaceFolder}\\src\\dla.c",
-                "${workspaceFolder}\\src\\save_grid.c",
+                "/Fe${workspaceFolder}\\build\\dla_generation.exe",
+                "${workspaceFolder}\\src\\*.c",
                 "${workspaceFolder}\\include\\lodepng\\lodepng.c",
                 "/I${workspaceFolder}/include"
             ],
@@ -31,9 +29,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${workspaceFolder}/src/main.c",
-                "${workspaceFolder}/src/dla.c",
-                "${workspaceFolder}/src/save_grid.c",
+                "${workspaceFolder}/src/*.c",
                 "${workspaceFolder}/include/lodepng/lodepng.c",
                 "-I${workspaceFolder}/include/",
                 "-o",
