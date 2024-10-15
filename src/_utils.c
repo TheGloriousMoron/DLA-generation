@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "_utils.h"
 
 arguments_t* args_init(int argc, char **argv) {
     // create the argument struct pointer
@@ -148,3 +148,5 @@ void free_args(arguments_t *args) {
 
     free(args);
 }
+
+// TODO: add logger

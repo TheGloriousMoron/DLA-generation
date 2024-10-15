@@ -55,7 +55,6 @@ const char *help_msg = "arguments:\n"
 // -d, --debug          grid output on/off
 // -g, --gridout        grid output filename
 
-
 int main(int argc, char **argv) {
     #ifdef _WIN32
         win_get_outpath(OUTPATH);
@@ -80,7 +79,7 @@ int main(int argc, char **argv) {
     grid_t *grid = grid_init(args);
     
     if (!args->help) {    
-        grid_run_simulation(grid);
+        // grid_run_simulation(grid);
 
         // Save grid as PNG
         save_grid_png(grid, args->out_name);
@@ -92,7 +91,7 @@ int main(int argc, char **argv) {
     }
 
     // Free resources
-    grid_free(grid);
+    // Free grid
     free_args(args);
 
     return 0;

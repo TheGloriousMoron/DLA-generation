@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/include/**",
-                "${workspaceFolder}\\include\\"
+                "${workspaceFolder}/include/lodepng/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -20,13 +20,22 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/include/**"
+                "/workspaces/DLA-generation/include/**",
+                "/workspaces/DLA-generation/include/lodepng/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++14",
-            "intelliSenseMode": "linux-clang-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "/workspaces/DLA-generation/include/**",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4
