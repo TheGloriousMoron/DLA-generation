@@ -1,6 +1,6 @@
 #include "defs.h"
 
-grid_t *grid_init(uint32_t size, uint32_t max_particles, uint32_t iteration_max)
+grid_t *grid_init(arguments_t* args)
 {
     grid_t *grid = (grid_t *)malloc(sizeof(grid_t));
     // error handling if grid isn't initialized
@@ -16,10 +16,10 @@ grid_t *grid_init(uint32_t size, uint32_t max_particles, uint32_t iteration_max)
     grid->empty_state = -1;
 
     // set the simulation variables
-    grid->max_particles = max_particles;
+    grid->max_particles = args->particle_count * args->grid_size;
     grid->current_particles = 0;
-    grid->size = size;
-    grid->iteration_max = iteration_max;
+    grid->size = args->grid_size;
+    grid->iteration_max = 256;
 
     // initialize the grid array
     grid->array = malloc(grid->size * sizeof(int32_t *)); // Allocate memory for the rows

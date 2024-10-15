@@ -30,6 +30,26 @@ extern char LOGPATH[MAX_PATH_LENGTH];
     void unix_get_outpath(char *outpath);
 #endif
 
+typedef struct {
+    bool help;
+    uint32_t grid_size;
+    uint32_t particle_count;
+    char *out_name;
+    bool debug;
+    char *grid_out_name;
+} arguments_t;
+
+// CMD Arguments:
+// -h, --help             Print this comments
+// -s, --gridsize       grid size
+// -p, --particlecount     particles per row
+// -o, --output         output file name
+// -d, --debug          grid output on/off
+// -g, --gridout        grid output filename
+
+arguments_t* args_init(int argc, char **argv);
+void free_args(arguments_t *arguments);
+
 // --DLA-GENERATION-START-- //
 
 typedef struct {
@@ -43,7 +63,7 @@ typedef struct {
     int8_t **array;
 } grid_t;
 
-grid_t* grid_init(uint32_t size, uint32_t max_particles, uint32_t iteration_max);
+grid_t* grid_init(arguments_t* args);
 
 bool check_particle_inside(grid_t *grid, int32_t *pos);
 bool check_particle_adjecent(grid_t *grid, int32_t *pos);
@@ -63,4 +83,5 @@ static const uint8_t EMPTY_COLOR[4] = {0x00, 0x00, 0x00, 0xff};
 void save_grid_png(grid_t *grid, char *filename);
 void save_grid_txt(grid_t *grid, char *filename);
 
+extern const char *help_msg;
 #endif
