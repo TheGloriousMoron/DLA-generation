@@ -48,13 +48,12 @@ const char *help_msg = "arguments:\n"
 "-g the name plus header of the file with the output of the grid.\n";
 
 // CMD Arguments:
-// -h, --h              Print this comments
+// -h, --help           Print this comments
 // -s, --gridsize       grid size
 // -p, --particlecount     particles per row
 // -o, --output         output file name
 // -d, --debug          grid output on/off
 // -g, --gridout        grid output filename
-
 
 
 int main(int argc, char **argv) {
