@@ -23,12 +23,17 @@ Install one of the releases and then extract the zip file to the directory of yo
 
 ## Usage
 ### Arguments
-1. A positive integer that is the size of the grid, cannot be 0.
-2. A positive integer that is the number of particles made available for each row. Do not make larger that the size of the grid or the program will break and must be ended manualy.
-3. A positive integer that is the maximum number of iterations per particle before the particle position is reset.
-4. A string that is the name of the png output of the grid example: output.png.
-5. A boolean value that when enabled, will output a txt file with the grid data in it. (Requires a character but only "on" will enable the txt output)
-6. A string that is the name of the txt output of the grid example: output.txt. (Only matters if argument five is "on") 
+-h Print the command list.
+
+-s The size of the grid
+
+-p The number of particles per row
+
+-o The filename and extension of the output image
+
+-d Enable txt debug output(prints the grid)
+
+-g The output filename and extension of the debug text file
 
 ### Output
 #### PNG File:
