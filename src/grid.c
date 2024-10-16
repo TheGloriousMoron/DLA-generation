@@ -1,5 +1,4 @@
 #include "grid.h"
-#include "_utils.h"
 
 void grid_alloc(grid_t *grid, uint32_t size, float c) {
     grid->size = size;
@@ -50,6 +49,21 @@ void grid_alloc(grid_t *grid, uint32_t size, float c) {
 }
 
 // initialize the starting particles and the starting weights
-void grid_init(grid_t *grid, vector_t *start_particles, vector_t start_weight_pos, float* start_weight_val) {
-    
+void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_count, vector_t start_weight_pos, float* start_weight_val, uint32_t start_weight_count) {
+    // Throw an error if there are more or the same number of start
+    if (start_particle_count >= grid->particle_max) {
+        printf(LOG_TYPE_ERROR);
+        printf(LOG_ERROR_GRID_3);
+        exit(-1);
+    }
+    // Throw an error if there are more weights than  spaces
+    if (start_weight_count > grid->size * grid->size) {
+        printf(LOG_TYPE_ERROR);
+        printf(LOG_ERROR_GRID_4);
+        exit(-1);
+    }
+    // Set weights
+    for (int i = 0; i < start_weight_count; i++) {
+
+    }
 }

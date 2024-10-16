@@ -73,6 +73,8 @@ void log(const char *log_type, const char *log_msg);
 #define LOG_ERROR_GRID_0 "Failed to allocate memory for the weight's columns.\n"
 #define LOG_ERROR_GRID_1 "Failed to allocate memory for the weight's rows.\n"
 #define LOG_ERROR_GRID_2 "Failed to allocate memory for the particle array.\n"
+#define LOG_ERROR_GRID_3 "The number of start particles was larger that the number of particles allowed.\n"
+#define LOG_ERROR_GRID_4 "The number of starting weights was larger that the number of weights allowed.\n"
 
 #define LOG_SUCCESS_GRID_0 "Succeded to allocate memory for the grid.\n"
 
