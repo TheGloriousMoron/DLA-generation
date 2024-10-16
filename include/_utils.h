@@ -21,12 +21,14 @@ typedef struct {
 } arguments_t;
 
 // CMD Arguments:
-// -h, --help             Print this comments
-// -s, --gridsize       grid size
-// -p, --particlecount     particles per row
-// -o, --output         output file name
-// -d, --debug          grid output on/off
-// -g, --gridout        grid output filename
+// -h, --help               Print this comments
+// -r, --gridsize           grid size
+// -p, --particlecount      particles per row
+// -o, --output             output file name
+// -d, --debug              grid output on/off
+// -g, --gridout            grid output filename
+// -a, --advanced           Advanced options enable weight filename
+// -w, --weight             the name of the weight file
 
 arguments_t* args_init(int argc, char **argv);
 void free_args(arguments_t *arguments);
