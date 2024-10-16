@@ -72,3 +72,4 @@ void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_
         grid->weights[grid->particles[i].x][grid->particles[i].y] = 1.0f; // Set the weights on a particle to 1.0f (MAX)
     }
 }
+
