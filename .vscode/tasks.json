@@ -9,18 +9,18 @@
                 "/Zi",
                 "/EHsc",
                 "/Fe${workspaceFolder}\\build\\dla_generation.exe",
+                "/Fo${workspaceFolder}\\build\\",
                 "${workspaceFolder}\\src\\*.c",
                 "${workspaceFolder}\\include\\lodepng\\lodepng.c",
-                "/I${workspaceFolder}/include"
+                "/I", "${workspaceFolder}\\include",
+                "/I", "${workspaceFolder}\\include\\lodepng"
             ],
-            "group": "build",
-            "problemMatcher": [
-                "$msCompile"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}\\build"
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
-            "detail": "Build using MSVC (cl.exe)"
+            "problemMatcher": ["$msCompile"],
+            "detail": "Generated task to build using MSVC"
         },
         {
             "label": "Build C Program (Linux - GCC)",
