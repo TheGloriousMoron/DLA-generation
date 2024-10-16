@@ -16,9 +16,16 @@ typedef struct {
     char *out_name;
     bool debug;
     char *grid_out_name;
+    bool use_grid_file;
     bool use_weights;
-    char *weights_path;
+    char *grid_path;
 } arguments_t;
+
+/* .GRID FILE FORMAT
+0x00 - 0x03 // first four bytes spell GRID
+0x04 - 0x07 // grid size
+0x08 - 0x0C
+*/
 
 // CMD Arguments:
 // -h, --help               Print this comments
