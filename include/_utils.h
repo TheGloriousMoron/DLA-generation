@@ -16,6 +16,8 @@ typedef struct {
     char *out_name;
     bool debug;
     char *grid_out_name;
+    bool use_weights;
+    char *weights_path;
 } arguments_t;
 
 // CMD Arguments:
