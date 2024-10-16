@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "grid.h"
 
 char OUTPATH[MAX_PATH_LENGTH];
 char LOGPATH[MAX_PATH_LENGTH];
@@ -41,11 +42,11 @@ void unix_get_outpath(char *outpath) {
 
 const char *help_msg = "arguments:\n"
 "-h print this message.\n"
-"-s <uint32_t> the size of the grid.\n"
-"-p <uint32_t> the number of particles for each row.\n"
+"-r <uint32_t> the resolution of the grid and image.\n"
+"-p <float> the percentage of the grid that will have particles as a float normalized between 0.0 and 1.0.\n"
 "-o <string> the name of the output file with header.\n"
 "-d output the grid as a text file.\n"
-"-g the name plus header of the file with the output of the grid.\n";
+"-g <string> the name plus header of the file with the output of the grid.\n";
 
 // CMD Arguments:
 // -h, --help           Print this comments
@@ -75,23 +76,33 @@ int main(int argc, char **argv) {
         printf("%s",help_msg);
     }
 
-    // Initialize grid and run the simulation
-    grid_t *grid = grid_init(args);
-    
-    if (!args->help) {    
-        // grid_run_simulation(grid);
+    if (!args->help) {   
+        // Initialize grid and run the simulation
+        grid_t *grid = (grid_t*)malloc(sizeof(grid_t));
+        grid_alloc(grid, args->grid_size, args->particle_coverage);
+        vector_t *p = (vector_t*){&(vector_t){grid->size / 2, grid->size / 2}};
+        grid_init(grid, p, 1, (vector_t*){p}, (float*){0}, 0);
+
+        // run simulation
+        grid_simulate_particles(grid);
+
+        rgba_t **data = grid_get_simulation_data(grid);
 
         // Save grid as PNG
-        save_grid_png(grid, args->out_name);
+        save_grid_png(grid, data, args->out_name);
+
+        // If grid output is enabled, save the grid to a text file
+        if (args->debug) {
+            save_grid_txt(grid, data, args->grid_out_name);
+        }
+
+        for(int i = 0; i < grid->size; i++) {
+            free(data[i]);
+        }
+        free(data);
+        grid_free(grid);
     }
 
-    // If grid output is enabled, save the grid to a text file
-    if (args->debug) {
-        save_grid_txt(grid, args->grid_out_name);
-    }
-
-    // Free resources
-    // Free grid
     free_args(args);
 
     return 0;

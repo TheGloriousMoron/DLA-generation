@@ -1,6 +1,8 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -10,8 +12,9 @@
 #include <lodepng/lodepng.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <math.h>
 
-#ifdef _WIN32 || _WIN64
+#if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
 #else
     #include <unistd.h>

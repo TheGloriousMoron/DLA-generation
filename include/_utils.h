@@ -1,3 +1,5 @@
+#ifndef _UTILS_H
+#define UTILS_H
 #include "includes.h"
 
 /*  .o88b. db      d888888b      db    db d888888b d888888b db      .d8888. */
@@ -10,7 +12,7 @@
 typedef struct {
     bool help;
     uint32_t grid_size;
-    uint32_t particle_count;
+    float particle_coverage;
     char *out_name;
     bool debug;
     char *grid_out_name;
@@ -43,8 +45,16 @@ void free_args(arguments_t *arguments);
 /* ~Y8888P'    YP    Y888888P Y88888P `8888Y' */
 
 typedef struct {
-    uint32_t x, y;
+    int32_t x, y;
 } vector_t;
+
+typedef struct {
+    float x, y;
+} vector_f; // A vector but with floating point values
+
+typedef struct {
+    uint8_t r,g,b,a;
+} rgba_t;
 
 /* db       .d88b.   d888b       db    db d888888b d888888b db      .d8888. */
 /* 88      .8P  Y8. 88' Y8b      88    88 `~~88~~'   `88'   88      88'  YP */
@@ -52,8 +62,6 @@ typedef struct {
 /* 88      88    88 88  ooo      88    88    88       88    88        `Y8b. */
 /* 88booo. `8b  d8' 88. ~8~      88b  d88    88      .88.   88booo. db   8D */
 /* Y88888P  `Y88P'   Y888P       ~Y8888P'    YP    Y888888P Y88888P `8888Y' */
-
-void log(const char *log_type, const char *log_msg);
 
 #define LOG_TYPE_ERROR "\033[1;31;47m[ERROR]\033[0m "
 #define LOG_TYPE_SUCCESS "\033[1;32;47m[SUCCESS]\033[0m "
@@ -79,3 +87,4 @@ void log(const char *log_type, const char *log_msg);
 #define LOG_SUCCESS_GRID_0 "Succeded to allocate memory for the grid.\n"
 
 #define LOG_WARNING_GRID_0 "Failed coverage value greater or equal to 1. Would you like to continue the generation at 0.5 or exit the program?\n[y/n]\n"
+#endif

@@ -23,7 +23,7 @@ arguments_t* args_init(int argc, char **argv) {
                             hp = true;
                             break;
                         }
-                    case 's':
+                    case 'r':
                         if (gs) {
                             printf("[ERROR] Inputted the same arg more than once.\n");
                             exit(-1);
@@ -110,7 +110,7 @@ arguments_t* args_init(int argc, char **argv) {
             exit(-1);
         } else {
             args->grid_size = atoi(gs_arg);
-            args->particle_count = atoi(pc_arg);
+            args->particle_coverage = atof(pc_arg);
             args->out_name = malloc(strlen(on_arg) + 1);
             strcpy(args->out_name, on_arg);
         }

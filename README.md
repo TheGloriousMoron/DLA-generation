@@ -25,7 +25,7 @@ Install one of the releases and then extract the zip file to the directory of yo
 ### Arguments
 -h Print the command list.
 
--s The size of the grid
+-r The resolution of the grid/image
 
 -p The number of particles per row
 
