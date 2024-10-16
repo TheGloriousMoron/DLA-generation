@@ -49,7 +49,7 @@ void grid_alloc(grid_t *grid, uint32_t size, float c) {
 }
 
 // initialize the starting particles and the starting weights
-void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_count, vector_t start_weight_pos, float* start_weight_val, uint32_t start_weight_count) {
+void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_count, vector_t *start_weight_pos, float* start_weight_val, uint32_t start_weight_count) {
     // Throw an error if there are more or the same number of start
     if (start_particle_count >= grid->particle_max) {
         printf(LOG_TYPE_ERROR);
@@ -64,6 +64,11 @@ void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_
     }
     // Set weights
     for (int i = 0; i < start_weight_count; i++) {
-
+        grid->weights[start_weight_pos[i].x][start_weight_pos[i].y] = start_weight_val[i];
+    }
+    // Set particles
+    for (int i = 0; i < start_particle_count; i++) {
+        grid->particles[i] = start_particles[i];
+        grid->weights[grid->particles[i].x][grid->particles[i].y] = 1.0f; // Set the weights on a particle to 1.0f (MAX)
     }
 }
