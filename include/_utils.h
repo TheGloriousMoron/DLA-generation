@@ -136,7 +136,7 @@ typedef struct {
 // -p, --particlecount      particles per row
 // -o, --output             output file name
 // -d, --debug              grid output on/off
-// -g, --gridout            grid output filename
+// -t, --gridout            grid output filename
 // -l, --loadgrid           Advanced options enable grid filename
 // -g, --gridloadname       the name of the grid file to be loaded
 

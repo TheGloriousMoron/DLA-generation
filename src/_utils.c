@@ -5,8 +5,8 @@ arguments_t* args_init(int argc, char **argv) {
     arguments_t* args = malloc(sizeof(arguments_t));
 
     // Initialize the flags
-    bool gs = false, pc = false, on = false, dg = false, go = false, hp = false, wf = false;
-    char *gs_arg = NULL, *pc_arg = NULL, *on_arg = NULL, *go_arg = NULL, *wf_arg = NULL;
+    bool gs = false, pc = false, on = false, dg = false, go = false, hp = false, lg = false, gf = false;
+    char *gs_arg = NULL, *pc_arg = NULL, *on_arg = NULL, *go_arg = NULL, *gf_arg = NULL;
 
     // Loop through the arguments to see what args we have
     for (int i = 1; i < argc; i++) {  // i < argc, not i < argc + 1
@@ -76,7 +76,7 @@ arguments_t* args_init(int argc, char **argv) {
                             dg = true;
                             break;
                         }
-                    case 'g': 
+                    case 't': 
                         if (go) {
                             printf("[ERROR] Inputted the same arg more than once.\n");
                             exit(-1);
@@ -91,14 +91,22 @@ arguments_t* args_init(int argc, char **argv) {
                             i++;
                             break;
                         }
-                    case 'w':
-                        if (wf) {
+                    case 'l':
+                        if (lg) {
                             printf("[ERROR] Inputted the same arg more than once.\n");
                             exit(-1);
                         } else {
-                            wf = true;
-                            wf_arg = malloc(strlen(argv[i + 1]) + 1);
-                            strcpy(wf_arg, argv[i + 1]);
+                            lg = true;
+                            break;
+                        }
+                    case 'g':
+                        if (gf) {
+                            printf("[ERROR] Inputted the same arg more than once.\n");
+                            exit(-1);
+                        } else {
+                            gf = true;
+                            gf_arg = malloc(strlen(argv[i+1]) + 1);
+                            strcpy(gf_arg, argv[i+1]);
                             i++;
                             break;
                         }
@@ -138,6 +146,16 @@ arguments_t* args_init(int argc, char **argv) {
         } else {
             args->debug = false;
         }
+        if (lg) {
+            if (!gf) {
+                printf("[ERROR] No filename to load grid from\n");
+                exit(-1);
+            } else {
+                args->load_grid = true;
+                args->load_grid_name = malloc(strlen(gf_arg) + 1);
+                strcpy(args->load_grid_name, gf_arg);
+            }
+        }
     }
     
     // Free allocated temporary strings
@@ -145,6 +163,7 @@ arguments_t* args_init(int argc, char **argv) {
     free(pc_arg);
     free(on_arg);
     free(go_arg);
+    free(gf_arg);
 
     return args;
 }
@@ -155,6 +174,9 @@ void free_args(arguments_t *args) {
     }
     if (args->grid_out_name) {
         free(args->grid_out_name);
+    }
+    if (args->load_grid_name) {
+        free(args->load_grid_name);
     }
 
     free(args);

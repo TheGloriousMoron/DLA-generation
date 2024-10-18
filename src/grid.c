@@ -316,7 +316,7 @@ void save_grid_txt(grid_t *grid, rgba_t** data, char *name) {
     free(filename);
 }
 
-void load_grid_file(char* name) {
+void load_grid_file(char *name, char *data) {
     size_t filename_len = strlen(GRIDPATH) + strlen(name) + 1; // +1 for the null terminator
     char *filename = (char*)malloc(filename_len);
 
@@ -324,5 +324,59 @@ void load_grid_file(char* name) {
     strcat(filename, name);
 
     FILE *fp = fopen(filename, "r");
-    
+    // Get the length of the file
+    fseek(fp, 0, SEEK_END);
+    size_t file_size = ftell(fp);
+    rewind(fp);
+
+    data = (char*)malloc(file_size + 1);
+    fread(data, 1, file_size, fp);
+    data[file_size] = '\0';
+}
+
+void convert_grid_data(char *data, uint32_t *size, uint32_t *particle_count, vector_t *positions) {
+    char *line = NULL;
+    char *data_buffer = strdup(data); // Duplicate data for safe manipulation
+    char *rest = data_buffer;  // Pointer to iterate through the buffer
+
+    // Get the first argument (grid size)
+    line = strtok_r(rest, "\n", &rest);  // Extract first line
+    if (line != NULL) {
+        *size = (uint32_t)atoi(line);  // Assign grid size
+    }
+
+    // Get the second argument (particle count)
+    line = strtok_r(rest, "\n", &rest);  // Extract second line
+    if (line != NULL) {
+        *particle_count = (uint32_t)atoi(line);  // Assign particle count
+    }
+
+    // Allocate memory for the positions array based on particle count
+    positions = (vector_t*)malloc(sizeof(vector_t) * (*particle_count));
+    if (positions == NULL) {
+        free(data_buffer);
+        exit(-1);
+    }
+
+    // Parse particle positions (one per line)
+    for (uint32_t i = 0; i < *particle_count; i++) {
+        line = strtok_r(rest, "\n", &rest);  // Extract next line
+        if (line == NULL) {
+            exit(-1);
+        }
+
+        // Split the line into two tokens: x and y
+        char *x_string = strtok(line, " ");
+        char *y_string = strtok(NULL, " ");
+
+        if (x_string != NULL && y_string != NULL) {
+            positions[i].x = atoi(x_string);
+            positions[i].y = atoi(y_string);
+        } else {
+            exit(-1);
+        }
+    }
+
+    // Clean up
+    free(data_buffer);
 }
