@@ -24,4 +24,5 @@ void grid_free(grid_t *grid);
 rgba_t** grid_get_simulation_data(grid_t *grid);
 void save_grid_png(grid_t *grid, rgba_t** data, char *name);
 void save_grid_txt(grid_t *grid, rgba_t** data, char *name);
+void load_grid
 #endif

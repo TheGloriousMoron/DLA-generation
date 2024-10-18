@@ -1,6 +1,116 @@
 #ifndef _UTILS_H
 #define UTILS_H
 #include "includes.h"
+#include "defs.h"
+
+char BASEPATH[MAX_PATH_LENGTH];
+char OUTPATH[MAX_PATH_LENGTH];
+char GRIDPATH[MAX_PATH_LENGTH];
+
+#if defined(_WIN32) || defined(_WIN64)
+    void win_get_basepath() {
+        char exe_path[MAX_PATH_LENGTH];
+        GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH);
+
+        // Find the last case of a backslash
+        char* last_backslash = strrchr(exe_path, '\\');
+        // Remove all characters after that
+        if (last_backslash != NULL) {
+            last_backslash = '\0';
+            // We have now gotten rid of the excecutable name
+            last_backslash = strrchr(exe_path, '\\'): // Repeat to end up in the base directory
+            if (last_backslash != BULL) {
+                last_backslash = '\0';
+            }
+        }
+
+        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
+    }
+
+    void win_get_outpath() {
+        char outname[] = "\\out\\";
+        int outname_len = strlen(outname);
+
+        // Copy the basepath to the outpath
+        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        for (int i = 0; i < outname_len; i++) {
+            OUTPATH[strlen(BASEPATH) + i] = outname[i];
+        }
+    }
+
+    void win_get_gridpath() {
+        char gridname[] = "\\grid\\";
+        int gridname_len = strlen(gridname);
+
+        // Copy the basepath to the outpath
+        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        for (int i = 0; i < gridname_len; i++) {
+            GRIDPATH[strlen(BASEPATH) + i] = gridname[i];
+        }
+    }
+#else
+    void unix_get_basepath() {
+        char exe_path[MAX_PATH_LENGTH];
+        ssize_t count = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+        
+        if (count != -1) {
+            exe_path[count] = '\0'; // Null-terminate the string
+
+            // Find the last case of a forward slash
+            char* last_slash = strrchr(exe_path, '/');
+            // Remove all characters after that
+            if (last_slash != NULL) {
+                *last_slash = '\0'; // Set the last slash to null terminator
+                // We have now gotten rid of the executable name
+                last_slash = strrchr(exe_path, '/'); // Repeat to end up in the base directory
+                if (last_slash != NULL) {
+                    *last_slash = '\0'; // Set to null terminator
+                }
+            }
+        } else {
+            perror("readlink");
+            exit(EXIT_FAILURE); // Exit if unable to get the executable path
+        }
+
+        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
+    }
+
+    void unix_get_outpath() {
+        const char outname[] = "/out/";
+        int outname_len = strlen(outname);
+
+        // Copy the basepath to the outpath
+        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        // Append the outname
+        strncat(OUTPATH, outname, MAX_PATH_LENGTH - strlen(OUTPATH) - 1);
+    }
+
+    void unix_get_gridpath() {
+        const char gridname[] = "/grid/";
+        int gridname_len = strlen(gridname);
+
+        // Copy the basepath to the gridpath
+        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        // Append the gridname
+        strncat(GRIDPATH, gridname, MAX_PATH_LENGTH - strlen(GRIDPATH) - 1);
+    }
+#endif
+
+void get_paths() {
+    #if defined(_WIN32) || defined(_WIN64)
+        win_get_basepath();
+        win_get_outpath();
+        win_get_gridpath();
+    #else
+        unix_get_basepath();
+        unix_get_outpath();
+        unix_get_gridpath();
+    #endif
+}
 
 /*  .o88b. db      d888888b      db    db d888888b d888888b db      .d8888. */
 /* d8P  Y8 88        `88'        88    88 `~~88~~'   `88'   88      88'  YP */
@@ -16,8 +126,8 @@ typedef struct {
     char *out_name;
     bool debug;
     char *grid_out_name;
-    bool use_weights;
-    char *weights_path;
+    bool load_grid;
+    char *load_grid_name;
 } arguments_t;
 
 // CMD Arguments:
@@ -27,8 +137,14 @@ typedef struct {
 // -o, --output             output file name
 // -d, --debug              grid output on/off
 // -g, --gridout            grid output filename
-// -a, --advanced           Advanced options enable weight filename
-// -w, --weight             the name of the weight file
+// -l, --loadgrid           Advanced options enable grid filename
+// -g, --gridloadname       the name of the grid file to be loaded
+
+// Grid File:
+// grid size\n
+// particle count\n
+// a list of the positions x, y \n
+
 
 arguments_t* args_init(int argc, char **argv);
 void free_args(arguments_t *arguments);

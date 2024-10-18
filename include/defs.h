@@ -5,25 +5,23 @@
 
 #define MAX_PATH_LENGTH 1024
 
+extern char BASEPATH[MAX_PATH_LENGTH];
 extern char OUTPATH[MAX_PATH_LENGTH];
-extern char LOGPATH[MAX_PATH_LENGTH];
+extern char GRIDPATH[MAX_PATH_LENGTH];
 
 #ifdef _WIN32
     // Function to get the output path dynamically in Windows
-    void win_get_outpath(char *outpath);
+    void win_get_basepath();
+    void win_get_outpath();
+    void win_get_gridpath();
 #else
     // Function to get the output path dynamically in Unix-based systems
-    void unix_get_outpath(char *outpath);
+    void unix_get_basepath();
+    void unix_get_outpath();
+    void unix_get_gridpath();
 #endif
 
-/*
-static const uint8_t PARTICLE_COLOR[4] = {0xff, 0xff, 0xff, 0xff};
-static const uint8_t ADJACENT_COLOR[4] = {0x80, 0x80, 0x80, 0xff};
-static const uint8_t EMPTY_COLOR[4] = {0x00, 0x00, 0x00, 0xff};
-
-void save_grid_png(grid_t *grid, char *filename);
-void save_grid_txt(grid_t *grid, char *filename);
-*/
+void get_paths();
 
 extern const char *help_msg;
 #endif

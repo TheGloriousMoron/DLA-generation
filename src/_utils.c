@@ -5,8 +5,8 @@ arguments_t* args_init(int argc, char **argv) {
     arguments_t* args = malloc(sizeof(arguments_t));
 
     // Initialize the flags
-    bool gs = false, pc = false, on = false, dg = false, go = false, hp = false;
-    char *gs_arg = NULL, *pc_arg = NULL, *on_arg = NULL, *go_arg = NULL;
+    bool gs = false, pc = false, on = false, dg = false, go = false, hp = false, wf = false;
+    char *gs_arg = NULL, *pc_arg = NULL, *on_arg = NULL, *go_arg = NULL, *wf_arg = NULL;
 
     // Loop through the arguments to see what args we have
     for (int i = 1; i < argc; i++) {  // i < argc, not i < argc + 1
@@ -91,6 +91,17 @@ arguments_t* args_init(int argc, char **argv) {
                             i++;
                             break;
                         }
+                    case 'w':
+                        if (wf) {
+                            printf("[ERROR] Inputted the same arg more than once.\n");
+                            exit(-1);
+                        } else {
+                            wf = true;
+                            wf_arg = malloc(strlen(argv[i + 1]) + 1);
+                            strcpy(wf_arg, argv[i + 1]);
+                            i++;
+                            break;
+                        }
                     default:
                         printf("[ERROR] Unknown argument: %s\n", argv[i]);
                         exit(-1);
@@ -149,4 +160,42 @@ void free_args(arguments_t *args) {
     free(args);
 }
 
-// TODO: add logger
+void load_grid_file(const char *path, char **file_data) {
+
+}
+
+void convert_grid_file(char **file_data, vector_t *positions, int* count, int *size) {
+    (*size) = atoi(file_data[0]);
+    (*count) = atoi(file_data[1]);
+
+    positions = (vector_t*)malloc(sizeof(vector_t) * (*count));
+
+    /*
+    for (int i = 0; i < count; i++) {
+        char *x_string, *y_string;
+        char* break_ptr = strchr(file_data[i+2], ' ');
+        int break_index = (int)(file_data[i+2] - break_ptr);
+        x_string = (char*)malloc(strlen(file_data[i+2]) - break_index);
+        y_string = (char*)malloc(strlen(file_data[i+2]) - break_index);
+        strncpy(x_string, file_data[i + 2], break_index);
+        for (int j = 0; j < strlen(file_data[i + 2]) - break_index; i++) {
+            if (file_data[i+2][j] != ' ') {
+                y_string[j] = file_data[i+2][j];
+            }
+        }
+        // Convert to values
+        positions[i].x = atoi(x_string);
+        positions[i].y = atoi(y_string);
+    }
+    */
+
+    for (int i = 0; i < *count; i++) {
+        int x, y;
+        // Use sscanf to split and parse the x and y values from the line
+        sscanf(file_data[i + 2], "%d %d", &x, &y);
+
+        // Assign the parsed values to the positions array
+        positions[i].x = x;
+        positions[i].y = y;
+    }
+}

@@ -315,3 +315,14 @@ void save_grid_txt(grid_t *grid, rgba_t** data, char *name) {
     fclose(fptr);
     free(filename);
 }
+
+void load_grid_file(char* name) {
+    size_t filename_len = strlen(GRIDPATH) + strlen(name) + 1; // +1 for the null terminator
+    char *filename = (char*)malloc(filename_len);
+
+    strcpy(filename, GRIDPATH);
+    strcat(filename, name);
+
+    FILE *fp = fopen(filename, "r");
+    
+}

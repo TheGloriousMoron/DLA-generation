@@ -18,6 +18,7 @@
     #include <windows.h>
 #else
     #include <unistd.h>
+    #include <limits.h> // For PATH_MAX
     #include <sys/types.h> // For ssize_t
 #endif
 
