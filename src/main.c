@@ -10,12 +10,14 @@ const char *help_msg = "arguments:\n"
 "-g <string> the name plus header of the file with the output of the grid.\n";
 
 // CMD Arguments:
-// -h, --help           Print this comments
-// -s, --gridsize       grid size
-// -p, --particlecount     particles per row
-// -o, --output         output file name
-// -d, --debug          grid output on/off
-// -g, --gridout        grid output filename
+// -h, --help               Print this comments
+// -r, --gridsize           grid size
+// -p, --particlecount      particles per row
+// -o, --output             output file name
+// -d, --debug              grid output on/off
+// -t, --gridout            grid output filename
+// -l, --loadgrid           Advanced options enable grid filename
+// -g, --gridloadname       the name of the grid file to be loaded
 
 int main(int argc, char **argv) {
     get_paths();
@@ -34,14 +36,37 @@ int main(int argc, char **argv) {
     if (!args->help) {   
         // Initialize grid and run the simulation
         grid_t *grid = (grid_t*)malloc(sizeof(grid_t));
+
         grid_alloc(grid, args->grid_size, args->particle_coverage);
+        
         if (args->load_grid) {
-            char *grid_data = NULL;
+            char *grid_data = (char*)malloc(sizeof(char) * 2);
+            
             load_grid_file(args->load_grid_name, grid_data);
-            uint32_t size, p_count;
-            vector_t *p_pos = NULL;
-            convert_grid_data(grid_data, &size, &p_count, p_pos);
-            grid_init(grid, p_count, p_pos, (float*){0}, 0);
+
+            uint32_t size = 0, p_count = 0;
+            if (&size == NULL  || &p_count == NULL) {
+                printf(LOG_TYPE_ERROR);
+                printf("Failed to create size and p_count variables.\n");
+                exit(-1);
+            } else {
+                printf(LOG_TYPE_SUCCESS);
+                printf("Success to create size and p_count varialbes.\n");
+            }
+
+            vector_t *p_pos = (vector_t*)malloc(sizeof(vector_t));
+            if (p_pos == NULL) {
+                printf(LOG_TYPE_ERROR);
+                printf("Failed to allocate memory for vertex array.\n");
+                exit(-1);
+            } else {
+                printf(LOG_TYPE_SUCCESS);
+                printf("Success to allocate memory for vertex array.\n");
+            }
+
+            convert_grid_data(grid_data, &size, &p_count, &p_pos);
+
+            grid_init(grid, p_pos, p_count, (vector_t*){NULL}, (float*){NULL}, 0);
         } else {
             vector_t *p = (vector_t*){&(vector_t){grid->size / 2, grid->size / 2}};
             grid_init(grid, p, 1, (vector_t*){NULL}, (float*){0}, 0);

@@ -54,21 +54,21 @@ void grid_alloc(grid_t *grid, uint32_t size, float c) {
 }
 
 void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_count, vector_t *start_weight_pos, float* start_weight_val, uint32_t start_weight_count) {
-    // Error if too many starting particles
     if (start_particle_count >= grid->particle_max) {
         printf(LOG_TYPE_ERROR);
         printf(LOG_ERROR_GRID_3);
         exit(-1);
     }
-    // Error if too many weights
     if (start_weight_count > grid->size * grid->size) {
         printf(LOG_TYPE_ERROR);
         printf(LOG_ERROR_GRID_4);
         exit(-1);
     }
 
-    grid->particle_count = start_particle_count;
-    
+    grid->particle_count = start_particle_count; // Set particle count correctly
+    printf(LOG_TYPE_INFO);
+    printf("Starting particle count: %d, Maximum particle count: %d\n", grid->particle_count, grid->particle_max);
+
     // Set weights
     for (int i = 0; i < start_weight_count; i++) {
         grid->weights[start_weight_pos[i].x][start_weight_pos[i].y] = start_weight_val[i];
@@ -76,13 +76,14 @@ void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_
 
     // Set particles
     for (int i = 0; i < start_particle_count; i++) {
-        grid->particles[i] = start_particles[i];
-        grid->weights[grid->particles[i].x][grid->particles[i].y] = 0.0f; // Set particle's weight to 0
+        grid->particles[i].x = start_particles[i].x; // Store new particle position
+        grid->particles[i].y = start_particles[i].y;
     }
 
     printf(LOG_TYPE_SUCCESS);
-    printf("Initialized grid with a size of %d and a particle number of %d\n", grid->size, grid->particle_max);
+    printf("Initialized grid with a size of %d and a particle number of %d\n", grid->size, grid->particle_count);
 }
+
 
 bool is_occupied(grid_t *grid, int x, int y) {
     for (int j = 0; j < grid->particle_count; j++) {
@@ -319,64 +320,127 @@ void save_grid_txt(grid_t *grid, rgba_t** data, char *name) {
 void load_grid_file(char *name, char *data) {
     size_t filename_len = strlen(GRIDPATH) + strlen(name) + 1; // +1 for the null terminator
     char *filename = (char*)malloc(filename_len);
+    if (filename == NULL) {
+        printf(LOG_TYPE_ERROR);
+        printf("Failed to allocate memory for the grid filename.\n");
+        exit(-1);
+    } else {
+        printf(LOG_TYPE_SUCCESS);
+        printf("Succesfully allocated memory for grid filename.\n");
+    }
 
     strcpy(filename, GRIDPATH);
     strcat(filename, name);
 
+    printf(LOG_TYPE_INFO);
+    printf("Grid filepath: %s\n", filename);
+
     FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf(LOG_TYPE_ERROR);
+        printf("Failed to open grid file.\n");
+        exit(-1);
+    } else {
+        printf(LOG_TYPE_SUCCESS);
+        printf("Success to open grid file.\n");
+    }
     // Get the length of the file
     fseek(fp, 0, SEEK_END);
     size_t file_size = ftell(fp);
     rewind(fp);
 
     data = (char*)malloc(file_size + 1);
+    if (data == NULL) {
+        printf(LOG_TYPE_ERROR);
+        printf("Failed to allocate memory for the data array.\n");
+        exit(-1);
+    } else {
+        printf(LOG_TYPE_SUCCESS);
+        printf("Success to allocate memory for the data array.\n");
+    }
     fread(data, 1, file_size, fp);
     data[file_size] = '\0';
+    printf(LOG_TYPE_SUCCESS);
+    printf("File data created succesfully.\n");
+    printf(LOG_TYPE_INFO);
+    printf("Would you like to see the data?\n[y/n]\n");
+    char input = getchar();
+    if (input == 'y') {
+        printf("\n %s",LOG_TYPE_INFO);
+        printf("File data: %s", data);
+        printf("\n");
+    }
 }
 
-void convert_grid_data(char *data, uint32_t *size, uint32_t *particle_count, vector_t *positions) {
-    char *line = NULL;
-    char *data_buffer = strdup(data); // Duplicate data for safe manipulation
-    char *rest = data_buffer;  // Pointer to iterate through the buffer
+void convert_grid_data(char *raw_data, uint32_t *size, uint32_t *particle_count, vector_t **positions) {
+    printf(LOG_TYPE_INFO);
+    printf("Entering convert_grid_data function\n");
 
-    // Get the first argument (grid size)
-    line = strtok_r(rest, "\n", &rest);  // Extract first line
-    if (line != NULL) {
-        *size = (uint32_t)atoi(line);  // Assign grid size
+    char **tokens = NULL;
+
+    *tokens = strtok(raw_data, " \n");
+    int token_count = 0;
+    while (tokens[token_count] != '\0') {
+        token_count++;
     }
 
-    // Get the second argument (particle count)
-    line = strtok_r(rest, "\n", &rest);  // Extract second line
-    if (line != NULL) {
-        *particle_count = (uint32_t)atoi(line);  // Assign particle count
-    }
+    // Initialize variables to track parsing
+    bool parsing_vectors = false;
+    (*particle_count) = 0;
+    int particle_index = 0;
 
-    // Allocate memory for the positions array based on particle count
-    positions = (vector_t*)malloc(sizeof(vector_t) * (*particle_count));
-    if (positions == NULL) {
-        free(data_buffer);
-        exit(-1);
-    }
-
-    // Parse particle positions (one per line)
-    for (uint32_t i = 0; i < *particle_count; i++) {
-        line = strtok_r(rest, "\n", &rest);  // Extract next line
-        if (line == NULL) {
-            exit(-1);
+    for (int i = 0; i < token_count; i++) {
+        int token_length = strlen(tokens[i]);
+        if (tokens[i][0] == '@') {
+            switch(tokens[i][1]) {
+                case 'r':
+                    // Index i by one to go to the next token
+                    i++;
+                    (*size) = atoi(tokens[i]);
+                    printf(LOG_TYPE_INFO);
+                    printf("Resolution comes from token %d, value of %d\n", i, (*size));
+                    break;
+                case 'c':
+                    // Index i by one to go to the next token
+                    i++;
+                    (*particle_count) = atoi(tokens[i]);
+                    (*positions) = (vector_t*)malloc(sizeof(vector_t) * (*particle_count));
+                    printf(LOG_TYPE_INFO);
+                    printf("Particle Count comes from token %d, value of %d\n", i, (*particle_count));
+                    break;
+                case 'v':
+                    // Index i by one to go to the next token
+                    i++;
+                    vector_t v;
+                    v.x = atoi(tokens[i]);
+                    // Index i by one again to get the y value
+                    i++;
+                    v.y = atoi(tokens[i]);
+                    (*positions) = (vector_t*)malloc(sizeof(vector_t) * (*particle_count));
+                    (*positions)[particle_index] = v;
+                    particle_index++;
+                    printf(LOG_TYPE_INFO);
+                    printf("Particle %d comes from tokens %d x %d y %d is set to values x %d y %d\n", particle_index, i - 2, i - 1, i, v.x, v.y);
+                    break;
+                default:
+                    break;
+            }
         }
-
-        // Split the line into two tokens: x and y
-        char *x_string = strtok(line, " ");
-        char *y_string = strtok(NULL, " ");
-
-        if (x_string != NULL && y_string != NULL) {
-            positions[i].x = atoi(x_string);
-            positions[i].y = atoi(y_string);
-        } else {
-            exit(-1);
-        }
     }
 
-    // Clean up
-    free(data_buffer);
+    for (int i = 0; i < token_count; i++) {
+        free(tokens[i]);
+    }
+    free(tokens);
+    
+    printf(LOG_TYPE_INFO);
+    printf("Finished parsing grid data.\n");
+    printf(LOG_TYPE_INFO);
+    printf("Resolution: %d\n", *size);
+    printf(LOG_TYPE_INFO);
+    printf("Particle count: %d\n", *particle_count);
+    for (size_t i = 0; i < *particle_count; i++) {
+        printf(LOG_TYPE_INFO);
+        printf("Particle %zu is at position: (%d, %d)\n", i, (*positions)[i].x, (*positions)[i].y);
+    }
 }

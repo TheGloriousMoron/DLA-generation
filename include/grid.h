@@ -26,5 +26,5 @@ void save_grid_png(grid_t *grid, rgba_t** data, char *name);
 void save_grid_txt(grid_t *grid, rgba_t** data, char *name);
 
 void load_grid_file(char* name, char *data);
-void convert_grid_data(char *data, uint32_t* size, uint32_t* particle_count, vector_t *positions);
+void convert_grid_data(char *data, uint32_t* size, uint32_t* particle_count, vector_t **positions);
 #endif

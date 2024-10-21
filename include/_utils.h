@@ -1,5 +1,5 @@
 #ifndef _UTILS_H
-#define UTILS_H
+#define _UTILS_H
 #include "includes.h"
 #include "defs.h"
 
@@ -8,109 +8,16 @@ char OUTPATH[MAX_PATH_LENGTH];
 char GRIDPATH[MAX_PATH_LENGTH];
 
 #if defined(_WIN32) || defined(_WIN64)
-    void win_get_basepath() {
-        char exe_path[MAX_PATH_LENGTH];
-        GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH);
-
-        // Find the last case of a backslash
-        char* last_backslash = strrchr(exe_path, '\\');
-        // Remove all characters after that
-        if (last_backslash != NULL) {
-            last_backslash = '\0';
-            // We have now gotten rid of the excecutable name
-            last_backslash = strrchr(exe_path, '\\'): // Repeat to end up in the base directory
-            if (last_backslash != BULL) {
-                last_backslash = '\0';
-            }
-        }
-
-        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
-    }
-
-    void win_get_outpath() {
-        char outname[] = "\\out\\";
-        int outname_len = strlen(outname);
-
-        // Copy the basepath to the outpath
-        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
-
-        for (int i = 0; i < outname_len; i++) {
-            OUTPATH[strlen(BASEPATH) + i] = outname[i];
-        }
-    }
-
-    void win_get_gridpath() {
-        char gridname[] = "\\grid\\";
-        int gridname_len = strlen(gridname);
-
-        // Copy the basepath to the outpath
-        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
-
-        for (int i = 0; i < gridname_len; i++) {
-            GRIDPATH[strlen(BASEPATH) + i] = gridname[i];
-        }
-    }
+    void win_get_basepath();
+    void win_get_outpath();
+    void win_get_gridpath();
 #else
-    void unix_get_basepath() {
-        char exe_path[MAX_PATH_LENGTH];
-        ssize_t count = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
-        
-        if (count != -1) {
-            exe_path[count] = '\0'; // Null-terminate the string
-
-            // Find the last case of a forward slash
-            char* last_slash = strrchr(exe_path, '/');
-            // Remove all characters after that
-            if (last_slash != NULL) {
-                *last_slash = '\0'; // Set the last slash to null terminator
-                // We have now gotten rid of the executable name
-                last_slash = strrchr(exe_path, '/'); // Repeat to end up in the base directory
-                if (last_slash != NULL) {
-                    *last_slash = '\0'; // Set to null terminator
-                }
-            }
-        } else {
-            perror("readlink");
-            exit(EXIT_FAILURE); // Exit if unable to get the executable path
-        }
-
-        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
-    }
-
-    void unix_get_outpath() {
-        const char outname[] = "/out/";
-        int outname_len = strlen(outname);
-
-        // Copy the basepath to the outpath
-        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
-
-        // Append the outname
-        strncat(OUTPATH, outname, MAX_PATH_LENGTH - strlen(OUTPATH) - 1);
-    }
-
-    void unix_get_gridpath() {
-        const char gridname[] = "/grid/";
-        int gridname_len = strlen(gridname);
-
-        // Copy the basepath to the gridpath
-        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
-
-        // Append the gridname
-        strncat(GRIDPATH, gridname, MAX_PATH_LENGTH - strlen(GRIDPATH) - 1);
-    }
+    void unix_get_basepath();
+    void unix_get_outpath();
+    void unix_get_gridpath();
 #endif
 
-void get_paths() {
-    #if defined(_WIN32) || defined(_WIN64)
-        win_get_basepath();
-        win_get_outpath();
-        win_get_gridpath();
-    #else
-        unix_get_basepath();
-        unix_get_outpath();
-        unix_get_gridpath();
-    #endif
-}
+void get_paths();
 
 /*  .o88b. db      d888888b      db    db d888888b d888888b db      .d8888. */
 /* d8P  Y8 88        `88'        88    88 `~~88~~'   `88'   88      88'  YP */
@@ -141,9 +48,12 @@ typedef struct {
 // -g, --gridloadname       the name of the grid file to be loaded
 
 // Grid File:
-// grid size\n
-// particle count\n
-// a list of the positions x, y \n
+// @resolution uint32_t grid size\n
+// @count uint32_t particle count\n
+// @vector_start\n
+// @x uint32_t x\n
+// @y uint32_t y\n
+// @vector_end\n (for every particle)
 
 
 arguments_t* args_init(int argc, char **argv);
@@ -183,10 +93,10 @@ typedef struct {
 /* 88booo. `8b  d8' 88. ~8~      88b  d88    88      .88.   88booo. db   8D */
 /* Y88888P  `Y88P'   Y888P       ~Y8888P'    YP    Y888888P Y88888P `8888Y' */
 
-#define LOG_TYPE_ERROR "\033[1;31;47m[ERROR]\033[0m "
-#define LOG_TYPE_SUCCESS "\033[1;32;47m[SUCCESS]\033[0m "
-#define LOG_TYPE_WARNING "\033[1;33;47m[WARNING]\033[0m "
-#define LOG_TYPE_INFO "\033[1;34:47m[INFO]\033[0m "
+#define LOG_TYPE_ERROR "\033[1;31m[ERROR]\033[0m "
+#define LOG_TYPE_SUCCESS "\033[1;32m[SUCCESS]\033[0m "
+#define LOG_TYPE_WARNING "\033[1;33m[WARNING]\033[0m "
+#define LOG_TYPE_INFO "\033[1;34m[INFO]\033[0m "
 
 #define LOG_INFO_MSG_0 "returning\n   ...\n"
 #define LOG_INFO_MSG_1 "exiting\n  ...\n"

@@ -182,42 +182,107 @@ void free_args(arguments_t *args) {
     free(args);
 }
 
-void load_grid_file(const char *path, char **file_data) {
+#if defined(_WIN32) || defined(_WIN64)
+    void win_get_basepath() {
+        char exe_path[MAX_PATH_LENGTH];
+        GetModuleFileName(NULL, exe_path, MAX_PATH_LENGTH);
 
-}
-
-void convert_grid_file(char **file_data, vector_t *positions, int* count, int *size) {
-    (*size) = atoi(file_data[0]);
-    (*count) = atoi(file_data[1]);
-
-    positions = (vector_t*)malloc(sizeof(vector_t) * (*count));
-
-    /*
-    for (int i = 0; i < count; i++) {
-        char *x_string, *y_string;
-        char* break_ptr = strchr(file_data[i+2], ' ');
-        int break_index = (int)(file_data[i+2] - break_ptr);
-        x_string = (char*)malloc(strlen(file_data[i+2]) - break_index);
-        y_string = (char*)malloc(strlen(file_data[i+2]) - break_index);
-        strncpy(x_string, file_data[i + 2], break_index);
-        for (int j = 0; j < strlen(file_data[i + 2]) - break_index; i++) {
-            if (file_data[i+2][j] != ' ') {
-                y_string[j] = file_data[i+2][j];
+        // Find the last case of a backslash
+        char* last_backslash = strrchr(exe_path, '\\');
+        // Remove all characters after that
+        if (last_backslash != NULL) {
+            last_backslash = '\0';
+            // We have now gotten rid of the excecutable name
+            last_backslash = strrchr(exe_path, '\\'): // Repeat to end up in the base directory
+            if (last_backslash != BULL) {
+                last_backslash = '\0';
             }
         }
-        // Convert to values
-        positions[i].x = atoi(x_string);
-        positions[i].y = atoi(y_string);
-    }
-    */
 
-    for (int i = 0; i < *count; i++) {
-        int x, y;
-        // Use sscanf to split and parse the x and y values from the line
-        sscanf(file_data[i + 2], "%d %d", &x, &y);
-
-        // Assign the parsed values to the positions array
-        positions[i].x = x;
-        positions[i].y = y;
+        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
     }
+
+    void win_get_outpath() {
+        char outname[] = "\\out\\";
+        int outname_len = strlen(outname);
+
+        // Copy the basepath to the outpath
+        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        for (int i = 0; i < outname_len; i++) {
+            OUTPATH[strlen(BASEPATH) + i] = outname[i];
+        }
+    }
+
+    void win_get_gridpath() {
+        char gridname[] = "\\grid\\";
+        int gridname_len = strlen(gridname);
+
+        // Copy the basepath to the outpath
+        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        for (int i = 0; i < gridname_len; i++) {
+            GRIDPATH[strlen(BASEPATH) + i] = gridname[i];
+        }
+    }
+#else
+    void unix_get_basepath() {
+        char exe_path[MAX_PATH_LENGTH];
+        ssize_t count = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+        
+        if (count != -1) {
+            exe_path[count] = '\0'; // Null-terminate the string
+
+            // Find the last case of a forward slash
+            char* last_slash = strrchr(exe_path, '/');
+            // Remove all characters after that
+            if (last_slash != NULL) {
+                *last_slash = '\0'; // Set the last slash to null terminator
+                // We have now gotten rid of the executable name
+                last_slash = strrchr(exe_path, '/'); // Repeat to end up in the base directory
+                if (last_slash != NULL) {
+                    *last_slash = '\0'; // Set to null terminator
+                }
+            }
+        } else {
+            perror("readlink");
+            exit(EXIT_FAILURE); // Exit if unable to get the executable path
+        }
+
+        strncpy(BASEPATH, exe_path, MAX_PATH_LENGTH);
+    }
+
+    void unix_get_outpath() {
+        const char outname[] = "/out/";
+        int outname_len = strlen(outname);
+
+        // Copy the basepath to the outpath
+        strncpy(OUTPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        // Append the outname
+        strncat(OUTPATH, outname, MAX_PATH_LENGTH - strlen(OUTPATH) - 1);
+    }
+
+    void unix_get_gridpath() {
+        const char gridname[] = "/grid/";
+        int gridname_len = strlen(gridname);
+
+        // Copy the basepath to the gridpath
+        strncpy(GRIDPATH, BASEPATH, MAX_PATH_LENGTH);
+
+        // Append the gridname
+        strncat(GRIDPATH, gridname, MAX_PATH_LENGTH - strlen(GRIDPATH) - 1);
+    }
+#endif
+
+void get_paths() {
+    #if defined(_WIN32) || defined(_WIN64)
+        win_get_basepath();
+        win_get_outpath();
+        win_get_gridpath();
+    #else
+        unix_get_basepath();
+        unix_get_outpath();
+        unix_get_gridpath();
+    #endif
 }
