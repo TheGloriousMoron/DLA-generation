@@ -33,7 +33,8 @@
                 "${workspaceFolder}/include/lodepng/lodepng.c",
                 "-I${workspaceFolder}/include/",
                 "-o",
-                "${workspaceFolder}/build/dla_generation"
+                "${workspaceFolder}/build/dla_generation",
+                "-L/usr/lib/x86_64-linux-gnu", "-lyaml"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build"

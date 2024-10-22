@@ -9,10 +9,12 @@
 #include <time.h>
 #include <stdint.h>
 #include <string.h>
-#include <lodepng/lodepng.h>
 #include <stdarg.h>
 #include <ctype.h>
 #include <math.h>
+
+#include <lodepng/lodepng.h>
+#include <yaml.h>
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>

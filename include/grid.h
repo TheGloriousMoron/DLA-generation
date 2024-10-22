@@ -16,6 +16,11 @@ typedef struct {
     uint32_t particle_count;
 } grid_t;
 
+typedef struct {
+    uint32_t size, particle_count;
+    vector_t *particles;
+} grid_data_t;
+
 void grid_alloc(grid_t *grid, uint32_t size, float c);
 void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_count, vector_t *start_weight_pos, float* start_weight_val, uint32_t start_weight_count);
 void grid_simulate_particles(grid_t *grid);
@@ -25,6 +30,5 @@ rgba_t** grid_get_simulation_data(grid_t *grid);
 void save_grid_png(grid_t *grid, rgba_t** data, char *name);
 void save_grid_txt(grid_t *grid, rgba_t** data, char *name);
 
-void load_grid_file(char* name, char *data);
-void convert_grid_data(char *data, uint32_t* size, uint32_t* particle_count, vector_t **positions);
+void load_grid_yaml(const char *name, grid_data_t *data);
 #endif

@@ -18,7 +18,7 @@
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/bin/Hostx64/x64/cl.exe"
         },
         {
-            "name": "Linux",
+            "name": "_Linux",
             "includePath": [
                 "/workspaces/DLA-generation/include/**",
                 "/workspaces/DLA-generation/include/lodepng/**"
@@ -32,10 +32,11 @@
             "browse": {
                 "path": [
                     "/workspaces/DLA-generation/include/**",
-                    "${workspaceFolder}"
+                    "/workspaces/DLA-generation"
                 ],
                 "limitSymbolsToIncludedHeaders": true
-            }
+            },
+            "compilerPathInCppPropertiesJson": "/usr/bin/gcc"
         }
     ],
     "version": 4
