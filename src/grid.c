@@ -65,9 +65,9 @@ void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_
         exit(-1);
     }
 
-    grid->particle_count = start_particle_count; // Set particle count correctly
-    printf(LOG_TYPE_INFO);
-    printf("Starting particle count: %d, Maximum particle count: %d\n", grid->particle_count, grid->particle_max);
+    // Fix: Initialize particle count properly
+    grid->start_particle_count = start_particle_count; // The number of starting particles
+    grid->particle_count = 0; // The number of simulated particles
 
     // Set weights
     for (int i = 0; i < start_weight_count; i++) {
@@ -81,7 +81,7 @@ void grid_init(grid_t *grid, vector_t *start_particles, uint32_t start_particle_
     }
 
     printf(LOG_TYPE_SUCCESS);
-    printf("Initialized grid with a size of %d and a particle number of %d and a particle max of %d\n", grid->size, grid->particle_count, grid->particle_max);
+    printf("Initialized grid with a size of %d and a starting particle number of %d and a particle max of %d\n", grid->size, grid->start_particle_count, grid->particle_max);
 }
 
 
@@ -96,7 +96,8 @@ bool is_occupied(grid_t *grid, int x, int y) {
 
 void move_particle(grid_t *grid, vector_t *particle) {
     bool valid_move = false;
-    while (!valid_move) {
+    int attempts = 0; // Add a counter for move attempts
+    while (!valid_move && attempts < 100) { // Limit attempts
         int move_dir = rand() % 4;
 
         switch (move_dir) {
@@ -105,71 +106,78 @@ void move_particle(grid_t *grid, vector_t *particle) {
                     particle->x -= 1;
                     valid_move = true;
                 }
-                break; // Fixed: Added break
+                break;
             case (1): // Move Right
                 if (particle->x < grid->size - 1) {
                     particle->x += 1;
                     valid_move = true;
                 }
-                break; // Fixed: Added break
+                break;
             case (2): // Move Up
                 if (particle->y != 0) {
                     particle->y -= 1;
                     valid_move = true;
                 }
-                break; // Fixed: Added break
+                break;
             case (3): // Move Down
                 if (particle->y < grid->size - 1) {
                     particle->y += 1;
                     valid_move = true;
                 }
-                break; // Fixed: Added break
-            default:
                 break;
         }
-    }    
+        attempts++;
+    }
+    if (attempts >= 100) {
+        printf("Particle movement failed after 100 attempts at position (%d, %d)\n", particle->x, particle->y);
+    }
 }
 
-// Function to simulate particles' movements
+// Update simulation function
 void grid_simulate_particles(grid_t *grid) {
-    for (int i = grid->particle_count; i < grid->particle_max; i++) {
+    for (grid->particle_count = grid->start_particle_count; grid->particle_count < grid->particle_max; grid->particle_count++) {
         printf(LOG_TYPE_INFO);
-        printf("Beginning simulation for particle %d out of %d.\n", i, grid->particle_max);
-        
-        vector_t *particle = (vector_t*)malloc(sizeof(vector_t));
-        bool starting_spot_found = false;
+        printf("Running simulation for particle %d out of %d\n", grid->particle_count, grid->particle_max);
 
-        // Generate a starting position for the new particle
-        while (!starting_spot_found) {
-            particle->x = rand() % grid->size;
-            particle->y = rand() % grid->size;
+        vector_t particle = {
+            .x = rand() % grid->size,
+            .y = rand() % grid->size
+        };
 
-            if (!is_occupied(grid, particle->x, particle->y)) {
-                starting_spot_found = true;
-            }
+        while (is_occupied(grid, particle.x, particle.y)) {
+            particle.x = rand() % grid->size;
+            particle.y = rand() % grid->size;
         }
 
-        bool is_resting = false;
-        while (!is_resting) {
-            // Check if the particle is resting (surrounded by others)
-            if (is_occupied(grid, particle->x - 1, particle->y) || 
-                is_occupied(grid, particle->x + 1, particle->y) ||
-                is_occupied(grid, particle->x, particle->y - 1) || 
-                is_occupied(grid, particle->x, particle->y + 1)) {
-                is_resting = true; // Corrected logic: set is_resting to true
-                break; // Particle is resting
+        printf(LOG_TYPE_INFO);
+        printf("Particle %d initialized at x %d, y %d\n", grid->particle_count, particle.x, particle.y);
+
+        bool is_settled = false;
+        while (!is_settled) {
+            // Check if the particle is adjacent to another
+            for (int i = 0; i < grid->particle_count; i++) {
+                if (grid->particles[i].x == particle.x && grid->particles[i].y == particle.y) {
+                    continue; // Skip if it's the same particle
+                }
+                if (abs(grid->particles[i].x - particle.x) <= 1 && abs(grid->particles[i].y - particle.y) <= 1) {
+                    // Check if it is a valid position
+                    if (is_occupied(grid, particle.x, particle.y)) {
+                        is_settled = true;
+                        break;
+                    }
+                }
             }
 
             // Move the particle
-            move_particle(grid, particle);
+            move_particle(grid, &particle);
         }
 
-        // Save particle's position after movement
-        grid->particles[grid->particle_count] = *particle; // Store new particle position
-        grid->particle_count++; // Increment particle count
-        free(particle); // Free allocated memory for the particle
+        grid->particles[grid->particle_count] = particle;
+        printf(LOG_TYPE_SUCCESS);
+        printf("Successfully settled particle %d at x %d y %d\n", grid->particle_count, particle.x, particle.y);
     }
 }
+
 
 // Function to output a 2D array
 rgba_t** grid_get_simulation_data(grid_t *grid) {
@@ -190,7 +198,6 @@ rgba_t** grid_get_simulation_data(grid_t *grid) {
         for (int r = 0; r < grid->size; r++) {
             // Assign the color to white
             data[c][r] = white;
-            data[c][r].a *= grid->weights[c][r];
         }
     }
     

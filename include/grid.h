@@ -13,7 +13,7 @@ typedef struct {
     uint32_t particle_max;
     float **weights;
     vector_t *particles;
-    uint32_t particle_count;
+    uint32_t particle_count, start_particle_count;
 } grid_t;
 
 typedef struct {
