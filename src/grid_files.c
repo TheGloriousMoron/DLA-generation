@@ -101,7 +101,7 @@ void save_grid_txt(grid_t *grid, rgba_t** data, char *name) {
 
 void load_grid_yaml(const char *name, grid_data_t *data) {
     printf(LOG_TYPE_INFO);
-    printf("entering the load_grid_yaml function\n");
+    printf("Entering the load_grid_yaml function\n");
 
     size_t filename_len = strlen(GRIDPATH) + strlen(name) + 1; // +1 for the null terminator
     char *filename = (char*)malloc(filename_len);
@@ -109,9 +109,6 @@ void load_grid_yaml(const char *name, grid_data_t *data) {
         printf(LOG_TYPE_ERROR);
         printf("Failed to allocate memory for the grid filename.\n");
         exit(-1);
-    } else {
-        printf(LOG_TYPE_SUCCESS);
-        printf("Success to allocate memory for the rid filename.\n");
     }
 
     strcpy(filename, GRIDPATH);
@@ -126,47 +123,28 @@ void load_grid_yaml(const char *name, grid_data_t *data) {
         printf("Failed to open grid file.\n");
         free(filename);
         exit(-1);
-    } else {
-        printf(LOG_TYPE_SUCCESS);
-        printf("Success to open grid file\n");
     }
 
     yaml_parser_t parser;
-    yaml_parser_initialize(&parser);
-    if (&parser == NULL) {
+    if (!yaml_parser_initialize(&parser)) {
         printf(LOG_TYPE_ERROR);
         printf("Failed to initialize parser\n");
         free(filename);
-        free(fp);
-    } else {
-        printf(LOG_TYPE_SUCCESS);
-        printf("Success in parser initialization\n");
+        fclose(fp);
+        exit(-1);
     }
+
     yaml_parser_set_input_file(&parser, fp);
 
-    data = malloc(sizeof(grid_data_t));
-    if (data == NULL) {
-        printf(LOG_TYPE_ERROR);
-        printf("Failed to allocate memory for grid data.\n");
-        fclose(fp);
-        free(filename);
-        exit(-1);
-    } else {
-        printf(LOG_TYPE_SUCCESS);
-        printf("Succes to allocate memory for the data pointer\n");
-    }
-    
-    data->particles = NULL;
-
+    // Initialize the grid_data structure
     uint32_t size = 0, particle_count = 0;
-
-    vector_t *vector_buffer = NULL;
 
     while (1) {
         yaml_event_t event;
         yaml_parser_parse(&parser, &event);
 
         if (event.type == YAML_DOCUMENT_END_EVENT) {
+            yaml_event_delete(&event);
             break; // End of the document
         }
 
@@ -180,38 +158,24 @@ void load_grid_yaml(const char *name, grid_data_t *data) {
         if (event.type == YAML_SCALAR_EVENT && strcmp((char *)event.data.scalar.value, "particle count") == 0) {
             yaml_parser_parse(&parser, &event);
             particle_count = atoi((char *)event.data.scalar.value);
-            printf(LOG_TYPE_INFO);
-            printf("The particle count is %s\n", (char *)event.data.scalar.value);
         }
 
-        // Handle particles
+        // Handle particles (sequence of vectors)
         if (event.type == YAML_SEQUENCE_START_EVENT) {
-            // Ensure we check if we are indeed starting the particles sequence
-            yaml_event_t seq_event;
-            yaml_parser_parse(&parser, &seq_event);
-            if (seq_event.type != YAML_SCALAR_EVENT || strcmp((char *)seq_event.data.scalar.value, "particles") != 0) {
-                continue; // Not the particles sequence
-            }
-
-            vector_buffer = (vector_t*)malloc(sizeof(vector_t) * particle_count);
-            if (vector_buffer == NULL) {
+            data->particles = (vector_t*)malloc(sizeof(vector_t) * particle_count);
+            if (data->particles == NULL) {
                 printf(LOG_TYPE_ERROR);
-                printf("Failed to allocate memory for vector buffer.\n");
-                free(data);
+                printf("Failed to allocate memory for particle array\n");
+                yaml_parser_delete(&parser);
                 fclose(fp);
                 free(filename);
-                yaml_parser_delete(&parser);
                 exit(-1);
             }
 
-            for (uint32_t fetched_particles = 0; fetched_particles < particle_count;) {
+            for (uint32_t i = 0; i < particle_count; i++) {
                 yaml_parser_parse(&parser, &event);
-                if (event.type == YAML_SEQUENCE_END_EVENT) {
-                    break; // End of the particles sequence
-                }
 
                 if (event.type == YAML_MAPPING_START_EVENT) {
-                    // Create out vector
                     vector_t v = {0, 0};
 
                     while (1) {
@@ -221,37 +185,47 @@ void load_grid_yaml(const char *name, grid_data_t *data) {
                         }
 
                         if (event.type == YAML_SCALAR_EVENT) {
-                            // Read key (should be "x" or "y")
                             char *key = (char *)event.data.scalar.value;
 
                             yaml_parser_parse(&parser, &event); // Get the value
 
-                            if (event.type == YAML_SCALAR_EVENT) {
-                                int32_t value = atoi((char *)event.data.scalar.value);
-                                if (strcmp(key, "x") == 0) {
-                                    v.x = value;
-                                } else if (strcmp(key, "y") == 0) {
-                                    v.y = value;
-                                }
+                            if (strcmp(key, "x") == 0) {
+                                v.x = atoi((char *)event.data.scalar.value);
+                            } else if (strcmp(key, "y") == 0) {
+                                v.y = atoi((char *)event.data.scalar.value);
                             }
                         }
                     }
 
-                    // Store the vector in the buffer
-                    vector_buffer[fetched_particles++] = v;
+                    // Store the vector in the particles array
+                    data->particles[i] = v;
                 }
+
+                yaml_event_delete(&event);
             }
         }
 
         yaml_event_delete(&event);
     }
 
+    // Assign size and particle_count to data
     data->size = size;
     data->particle_count = particle_count;
-    data->particles = vector_buffer; // Directly assign to particles
+
+    printf(LOG_TYPE_INFO);
+    printf("Grid size loaded: %d\n", data->size);
+    printf(LOG_TYPE_INFO);
+    printf("Particle count loaded: %d\n", data->particle_count);
+
+    for (int i = 0; i < data->particle_count; i++) {
+        printf(LOG_TYPE_INFO);
+        printf("Particle %d has an x of %d and a y of %d\n", i, data->particles[i].x, data->particles[i].y);
+    }
 
     // Clean up
     yaml_parser_delete(&parser);
     fclose(fp);
     free(filename);
 }
+
+
