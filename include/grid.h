@@ -28,7 +28,7 @@ void move_particle(grid_t *grid, vector_t *p);
 void grid_free(grid_t *grid);
 rgba_t** grid_get_simulation_data(grid_t *grid);
 void save_grid_png(grid_t *grid, rgba_t** data, char *name);
-void save_grid_txt(grid_t *grid, rgba_t** data, char *name);
+void save_grid_yaml(grid_t *grid, char *name);
 
 void load_grid_yaml(const char *name, grid_data_t *data);
 #endif

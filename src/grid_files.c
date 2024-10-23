@@ -51,53 +51,65 @@ void save_grid_png(grid_t *grid, rgba_t** data, char *name) {
     free(filename);
 }
 
-void save_grid_txt(grid_t *grid, rgba_t** data, char *name) {
+void scale_grid_yaml(uint32_t new_size, uint32_t old_size, uint32_t* particle_count, vector_t *particles) {
+    // Return if the new_size is smaller or equal to the old_size
+    if (new_size <= old_size) {
+        return;
+    }
+
+    // Get the ratio between rhe new and old sizes
+    float unround_ar = new_size/old_size;
+    uint32_t aspect_ratio = (uint32_t)ceil(unround_ar);
+
+    // Create a buffer for the vector array
+    vector_t *vbuff = (vector_t*)malloc(sizeof(vector_t) * *(particle_count));
+    for (int i = 0; i < particle_count; i++) {
+        vbuff[i] = particles[i];
+    }
+}
+
+void save_grid_yaml(grid_t *grid, char *name) {
     // Allocate enough space for the full file path, including the path separator and null terminator
-    size_t filename_len = strlen(OUTPATH) + strlen(name) + 1; // +1 for null terminator
+    size_t filename_len = strlen(GRIDPATH) + strlen(name) + 2; // +2 for path separator and null terminator
     char *filename = (char*)malloc(filename_len);
 
     if (!filename) {
-        perror("[ERROR] Unable to allocate memory for filename\n");
+        printf(LOG_TYPE_ERROR);
+        printf("Unable to allocate memory for filename\n");
         exit(-1);
     }
 
-    // Copy the output path and the name into the filename buffer
-    strcpy(filename, OUTPATH);  // Copy the output path first
-    strcat(filename, name);     // Append the filename
+    // Construct the filename
+    snprintf(filename, filename_len, "%s/%s.yaml", GRIDPATH, name); // Use snprintf for safety
 
     // Open the file for writing
-    FILE *fptr = fopen(filename, "w");
-    if (!fptr) {
-        perror("[ERROR] Failed to open file for writing\n");
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        printf(LOG_TYPE_ERROR);
+        printf("Unable to open file %s for writing\n", filename);
         free(filename);
         exit(-1);
     }
 
-    // Write the grid content to the file
-    for (int x = 0; x < grid->size; x++) {
-        for (int y = 0; y < grid->size; y++) {
-            // Turn the particle into a character
-            char c;
-            if (
-                data[x][y].r == particle_color.r &&
-                data[x][y].g == particle_color.g &&
-                data[x][y].b == particle_color.b
-                ) {
-                c = '#';
-            } else {
-                c = '-';
-            }
+    // Write YAML header
+    fprintf(file, "resolution: %d\n", grid->size);
+    fprintf(file, "particle count: %d\n", grid->particle_count);
+    fprintf(file, "particles:\n");
 
-            // Write a single character
-            fputc(c, fptr);
-        }
-        // Write a newline after each row
-        fputc('\n', fptr);
+    // Write particle positions
+    for (uint32_t i = 0; i < grid->particle_count; i++) {
+        fprintf(file, "   - x: %d\n", grid->particles[i].x);
+        fprintf(file, "     y: %d\n", grid->particles[i].y);
     }
 
-    fclose(fptr);
+    // Clean up
+    fclose(file);
     free(filename);
+
+    printf(LOG_TYPE_SUCCESS);
+    printf("Grid data saved successfully to %s\n", filename);
 }
+
 
 void load_grid_yaml(const char *name, grid_data_t *data) {
     printf(LOG_TYPE_INFO);

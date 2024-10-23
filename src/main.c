@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
         // If grid output is enabled, save the grid to a text file
         if (args->debug) {
-            save_grid_txt(grid, data, args->grid_out_name);
+            save_grid_yaml(grid, args->grid_out_name);
         }
 
         for(int i = 0; i < grid->size; i++) {
