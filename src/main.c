@@ -43,6 +43,8 @@ int main(int argc, char **argv) {
             grid_data_t *yaml_data = malloc(sizeof(grid_data_t));
             load_grid_yaml(args->load_grid_name, yaml_data);
 
+            scale_grid_yaml(args->grid_size, yaml_data->size, &yaml_data->particle_count, yaml_data->particles);
+
             grid_init(grid, yaml_data->particles, yaml_data->particle_count, (vector_t*){NULL}, (float*){NULL}, 0);
         } else {
             vector_t *p = (vector_t*){&(vector_t){grid->size / 2, grid->size / 2}};

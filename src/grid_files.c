@@ -57,15 +57,44 @@ void scale_grid_yaml(uint32_t new_size, uint32_t old_size, uint32_t* particle_co
         return;
     }
 
-    // Get the ratio between rhe new and old sizes
-    float unround_ar = new_size/old_size;
-    uint32_t aspect_ratio = (uint32_t)ceil(unround_ar);
+    // Calculate the scaling factor as a float
+    float scale_ratio = (float)new_size / old_size;
 
-    // Create a buffer for the vector array
-    vector_t *vbuff = (vector_t*)malloc(sizeof(vector_t) * *(particle_count));
-    for (int i = 0; i < particle_count; i++) {
-        vbuff[i] = particles[i];
+    // Estimate the maximum new particle count and allocate buffer
+    vector_t* pbuf = (vector_t*)malloc(sizeof(vector_t) * (*particle_count) * scale_ratio * scale_ratio);
+    if (!pbuf) {
+        printf("Error allocating memory for particle buffer\n");
+        return;
     }
+
+    // Initialize the new particle count
+    uint32_t new_particle_count = 0;
+
+    // For each original particle, duplicate it across a `scale_ratio x scale_ratio` grid
+    for (int i = 0; i < *particle_count; i++) {
+        vector_t orig_particle = particles[i];
+
+        // Loop to create a grid of particles in the scaled-up grid area
+        for (int dx = 0; dx < (int)scale_ratio; dx++) {
+            for (int dy = 0; dy < (int)scale_ratio; dy++) {
+                vector_t new_particle;
+                new_particle.x = (int)(orig_particle.x * scale_ratio) + dx;
+                new_particle.y = (int)(orig_particle.y * scale_ratio) + dy;
+
+                // Add new particle to buffer if within bounds
+                if (new_particle.x < new_size && new_particle.y < new_size) {
+                    pbuf[new_particle_count++] = new_particle;
+                }
+            }
+        }
+    }
+
+    // Update the original particle array and particle count
+    *particle_count = new_particle_count;
+    memcpy(particles, pbuf, new_particle_count * sizeof(vector_t));
+
+    // Free temporary buffer
+    free(pbuf);
 }
 
 void save_grid_yaml(grid_t *grid, char *name) {
