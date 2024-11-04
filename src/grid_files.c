@@ -52,49 +52,75 @@ void save_grid_png(grid_t *grid, rgba_t** data, char *name) {
 }
 
 void scale_grid_yaml(uint32_t new_size, uint32_t old_size, uint32_t* particle_count, vector_t *particles) {
-    // Return if the new_size is smaller or equal to the old_size
-    if (new_size <= old_size) {
-        return;
+    float scale_factor = (float)new_size / (float)old_size;
+    uint32_t original_count = *particle_count;
+
+    // Allocate temporary weight grid for smoothing
+    float **w = (float**)malloc(sizeof(float*) * new_size);
+    if (w == NULL) {
+        printf("Error: Failed to allocate memory for grid weights.\n");
+        exit(-1);
+    }
+    for (uint32_t i = 0; i < new_size; i++) {
+        w[i] = (float*)calloc(new_size, sizeof(float));
+        if (w[i] == NULL) {
+            printf("Error: Failed to allocate memory for grid weights.\n");
+            exit(-1);
+        }
     }
 
-    // Calculate the scaling factor as a float
-    float scale_ratio = (float)new_size / old_size;
+    // Scale each particle and distribute weights
+    for (uint32_t i = 0; i < original_count; i++) {
+        int32_t new_x = (int32_t)(particles[i].x * scale_factor);
+        int32_t new_y = (int32_t)(particles[i].y * scale_factor);
 
-    // Estimate the maximum new particle count and allocate buffer
-    vector_t* pbuf = (vector_t*)malloc(sizeof(vector_t) * (*particle_count) * scale_ratio * scale_ratio);
-    if (!pbuf) {
-        printf("Error allocating memory for particle buffer\n");
-        return;
-    }
+        // Clamp within bounds
+        new_x = new_x < 0 ? 0 : (new_x >= (int32_t)new_size ? new_size - 1 : new_x);
+        new_y = new_y < 0 ? 0 : (new_y >= (int32_t)new_size ? new_size - 1 : new_y);
 
-    // Initialize the new particle count
-    uint32_t new_particle_count = 0;
-
-    // For each original particle, duplicate it across a `scale_ratio x scale_ratio` grid
-    for (int i = 0; i < *particle_count; i++) {
-        vector_t orig_particle = particles[i];
-
-        // Loop to create a grid of particles in the scaled-up grid area
-        for (int dx = 0; dx < (int)scale_ratio; dx++) {
-            for (int dy = 0; dy < (int)scale_ratio; dy++) {
-                vector_t new_particle;
-                new_particle.x = (int)(orig_particle.x * scale_ratio) + dx;
-                new_particle.y = (int)(orig_particle.y * scale_ratio) + dy;
-
-                // Add new particle to buffer if within bounds
-                if (new_particle.x < new_size && new_particle.y < new_size) {
-                    pbuf[new_particle_count++] = new_particle;
+        // Apply smoothing weights
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                int nx = new_x + dx;
+                int ny = new_y + dy;
+                if (nx >= 0 && nx < (int32_t)new_size && ny >= 0 && ny < (int32_t)new_size) {
+                    float distance = sqrtf(dx * dx + dy * dy);
+                    float weight = 1.0f / (1.0f + distance);
+                    w[nx][ny] += weight;
                 }
             }
         }
     }
 
-    // Update the original particle array and particle count
-    *particle_count = new_particle_count;
-    memcpy(particles, pbuf, new_particle_count * sizeof(vector_t));
+    // Normalize weights
+    float max_weight = 0.0f;
+    for (uint32_t x = 0; x < new_size; x++) {
+        for (uint32_t y = 0; y < new_size; y++) {
+            if (w[x][y] > max_weight) {
+                max_weight = w[x][y];
+            }
+        }
+    }
+    if (max_weight > 0.0f) {
+        for (uint32_t x = 0; x < new_size; x++) {
+            for (uint32_t y = 0; y < new_size; y++) {
+                w[x][y] /= max_weight;
+            }
+        }
+    }
 
-    // Free temporary buffer
-    free(pbuf);
+    // Deallocate weight grid memory
+    for (uint32_t i = 0; i < new_size; i++) {
+        free(w[i]);
+    }
+    free(w);
+
+    // Update the particle count based on scaling factor
+    uint32_t scaled_particle_count = (uint32_t)(original_count * scale_factor * scale_factor);
+    *particle_count = scaled_particle_count <= original_count ? scaled_particle_count : original_count;
+
+    printf(LOG_TYPE_INFO);
+    printf("Scaled grid to size %d with new particle count %d\n", new_size, *particle_count);
 }
 
 void save_grid_yaml(grid_t *grid, char *name) {

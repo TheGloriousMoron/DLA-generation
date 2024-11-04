@@ -34,7 +34,7 @@
                 "-I${workspaceFolder}/include/",
                 "-o",
                 "${workspaceFolder}/build/dla_generation",
-                "-L/usr/lib/x86_64-linux-gnu", "-lyaml"
+                "-L/usr/lib/x86_64-linux-gnu", "-lyaml", "-lm"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build"

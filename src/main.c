@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
 
             scale_grid_yaml(args->grid_size, yaml_data->size, &yaml_data->particle_count, yaml_data->particles);
 
-            grid_init(grid, yaml_data->particles, yaml_data->particle_count, (vector_t*){NULL}, (float*){NULL}, 0);
+            grid_init(grid, yaml_data->particles, yaml_data->particle_count);
         } else {
             vector_t *p = (vector_t*){&(vector_t){grid->size / 2, grid->size / 2}};
-            grid_init(grid, p, 1, (vector_t*){NULL}, (float*){0}, 0);
+            grid_init(grid, NULL, 0);
         }
         
         // run simulation
