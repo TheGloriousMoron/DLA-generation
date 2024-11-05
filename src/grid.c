@@ -2,7 +2,7 @@
 
 const rgba_t white = {255, 255, 255, 255};
 const rgba_t black = {0, 0, 0, 255};
-const rgba_t particle_color = {255, 255, 255, 255};
+const rgba_t particle_color = {100, 100, 128, 255};
 
 void grid_alloc(grid_t *grid, uint32_t size, float c) {
     grid->size = size;
